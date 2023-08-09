@@ -1,0 +1,30 @@
+/home/eddie/projects/tinyTasks/tinyTasks/build/max20303.o: \
+ /home/eddie/workspace/msdk//Libraries/MiscDrivers/PMIC/max20303.c \
+ /home/eddie/arm/arm_tools/lib/gcc/arm-none-eabi/10.3.1/include/stdint.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/stdint.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/machine/_default_types.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/sys/features.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/_newlib_version.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/sys/_intsup.h \
+ /home/eddie/arm/arm_tools/arm-none-eabi/include/sys/_stdint.h \
+ /home/eddie/arm/arm_tools/lib/gcc/arm-none-eabi/10.3.1/include/stddef.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_device.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/max32655.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/5.9.0/Core/Include/core_cm4.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/5.9.0/Core/Include/cmsis_version.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/5.9.0/Core/Include/cmsis_compiler.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/5.9.0/Core/Include/cmsis_gcc.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/5.9.0/Core/Include/mpu_armv7.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/system_max32655.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_errors.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_pins.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/gpio.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/gpio_regs.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_delay.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/i2c.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_sys.h \
+ /home/eddie/workspace/msdk/Libraries/PeriphDrivers/Include/MAX32655/mxc_device.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/gcr_regs.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/lpgcr_regs.h \
+ /home/eddie/workspace/msdk/Libraries/CMSIS/Device/Maxim/MAX32655/Include/i2c_regs.h \
+ /home/eddie/workspace/msdk//Libraries/MiscDrivers/PMIC/max20303.h
