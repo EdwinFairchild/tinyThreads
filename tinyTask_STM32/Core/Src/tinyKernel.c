@@ -223,3 +223,14 @@ void tos_StartScheduler(void)
     __asm("BX LR");
 
 }
+
+void tos_KernelYield(void)
+{
+    // since systick is a countdown timer, we can just set the value to 0
+    // and triggger an interrupt thus forcing a task switch
+    SysTick->VAL = 0;
+    // trigger systick interrupt
+    SCB->ICSR |= SCB_ICSR_PENDSTSET_Msk;
+    // return from interrupt
+    __asm("BX LR");
+}

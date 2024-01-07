@@ -11,6 +11,6 @@ typedef void (*thread_t)(void);
 uint32_t tos_KernelStackInit(uint32_t i);
 void tos_KernelStart(uint32_t quanta);
 void tos_StartScheduler(void);
-
+void tos_KernelYield(void);
 uint8_t tos_KernelAddThread(thread_t thread_1,thread_t thread_2,thread_t thread_3);
 #endif // _TINY_KERNEL_H_

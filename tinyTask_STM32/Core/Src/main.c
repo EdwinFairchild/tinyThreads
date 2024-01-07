@@ -67,7 +67,7 @@ void task_0(void)
     task0Counter++;
     CL_printMsg("In task 0\r\n");
     // delay using for loop
-    for (i = 0; i < 1000000; i++);
+    tos_KernelYield();
     
     
   }
@@ -80,7 +80,7 @@ void task_1(void)
     task1Counter++;
     CL_printMsg("In task 1\r\n");
     // delay using for loop
-    for (i = 0; i < 1000000; i++);
+    tos_KernelYield();    
   }
 }
 void task_2(void)
