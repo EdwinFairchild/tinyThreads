@@ -1,0 +1,165 @@
+ARM GAS  /tmp/ccTee9Js.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"tinyKernel.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.rodata.tinyKernel_init.str1.4,"aMS",%progbits,1
+  20              		.align	2
+  21              	.LC0:
+  22 0000 53746172 		.ascii	"Starting tinyTasks Kernel\015\012\000"
+  22      74696E67 
+  22      2074696E 
+  22      79546173 
+  22      6B73204B 
+  23              		.section	.text.tinyKernel_init,"ax",%progbits
+  24              		.align	1
+  25              		.global	tinyKernel_init
+  26              		.syntax unified
+  27              		.thumb
+  28              		.thumb_func
+  30              	tinyKernel_init:
+  31              	.LFB3:
+  32              		.file 1 "tinyTasks/src/tinyKernel.c"
+   1:tinyTasks/src/tinyKernel.c **** #include "tinyKernel.h"
+   2:tinyTasks/src/tinyKernel.c **** #include "tinyTasksError.h"
+   3:tinyTasks/src/tinyKernel.c **** #include "tinyTasksConfig.h"
+   4:tinyTasks/src/tinyKernel.c **** 
+   5:tinyTasks/src/tinyKernel.c **** // TODO: remove Debugging-----------
+   6:tinyTasks/src/tinyKernel.c **** extern void printMsg(char *msg, ...);
+   7:tinyTasks/src/tinyKernel.c **** //---------------------
+   8:tinyTasks/src/tinyKernel.c **** 
+   9:tinyTasks/src/tinyKernel.c **** 
+  10:tinyTasks/src/tinyKernel.c **** __attribute__((naked)) TinyTasksStatus tinyKernel_init(void){
+  33              		.loc 1 10 61 view -0
+  34              		.cfi_startproc
+  35              		@ Naked Function: prologue and epilogue provided by programmer.
+  36              		@ args = 0, pretend = 0, frame = 0
+  37              		@ frame_needed = 0, uses_anonymous_args = 0
+  11:tinyTasks/src/tinyKernel.c ****     TinyTasksStatus err = TINYTASKS_OK;
+  38              		.loc 1 11 5 view .LVU1
+  39              	.LVL0:
+  12:tinyTasks/src/tinyKernel.c ****     printMsg("Starting tinyTasks Kernel\r\n");
+  40              		.loc 1 12 5 view .LVU2
+  41 0000 0148     		ldr	r0, .L2
+  42 0002 FFF7FEFF 		bl	printMsg
+ARM GAS  /tmp/ccTee9Js.s 			page 2
+
+
+  43              	.LVL1:
+  13:tinyTasks/src/tinyKernel.c ****     return err;
+  44              		.loc 1 13 5 view .LVU3
+  14:tinyTasks/src/tinyKernel.c **** }
+  45              		.loc 1 14 1 is_stmt 0 view .LVU4
+  46 0006 0020     		movs	r0, #0
+  47              	.L3:
+  48              		.align	2
+  49              	.L2:
+  50 0008 00000000 		.word	.LC0
+  51              		.cfi_endproc
+  52              	.LFE3:
+  54              		.section	.text.tinyKernel_run,"ax",%progbits
+  55              		.align	1
+  56              		.global	tinyKernel_run
+  57              		.syntax unified
+  58              		.thumb
+  59              		.thumb_func
+  61              	tinyKernel_run:
+  62              	.LFB4:
+  15:tinyTasks/src/tinyKernel.c **** TinyTasksStatus tinyKernel_run(void){
+  63              		.loc 1 15 37 is_stmt 1 view -0
+  64              		.cfi_startproc
+  65              		@ args = 0, pretend = 0, frame = 0
+  66              		@ frame_needed = 0, uses_anonymous_args = 0
+  67              		@ link register save eliminated.
+  16:tinyTasks/src/tinyKernel.c ****     TinyTasksStatus err = TINYTASKS_OK;
+  68              		.loc 1 16 5 view .LVU6
+  69              	.LVL2:
+  17:tinyTasks/src/tinyKernel.c ****     
+  18:tinyTasks/src/tinyKernel.c ****     return err;
+  70              		.loc 1 18 5 view .LVU7
+  19:tinyTasks/src/tinyKernel.c **** }
+  71              		.loc 1 19 1 is_stmt 0 view .LVU8
+  72 0000 0020     		movs	r0, #0
+  73 0002 7047     		bx	lr
+  74              		.cfi_endproc
+  75              	.LFE4:
+  77              		.section	.text.tinyKetnell_addTask,"ax",%progbits
+  78              		.align	1
+  79              		.global	tinyKetnell_addTask
+  80              		.syntax unified
+  81              		.thumb
+  82              		.thumb_func
+  84              	tinyKetnell_addTask:
+  85              	.LVL3:
+  86              	.LFB5:
+  20:tinyTasks/src/tinyKernel.c **** TinyTasksStatus tinyKetnell_addTask(void (*task)(void), uint32_t period){
+  87              		.loc 1 20 73 is_stmt 1 view -0
+  88              		.cfi_startproc
+  89              		@ args = 0, pretend = 0, frame = 0
+  90              		@ frame_needed = 0, uses_anonymous_args = 0
+  91              		@ link register save eliminated.
+  21:tinyTasks/src/tinyKernel.c ****     TinyTasksStatus err = TINYTASKS_OK;
+  92              		.loc 1 21 5 view .LVU10
+  22:tinyTasks/src/tinyKernel.c ****     
+  23:tinyTasks/src/tinyKernel.c ****     return err;
+ARM GAS  /tmp/ccTee9Js.s 			page 3
+
+
+  93              		.loc 1 23 5 view .LVU11
+  24:tinyTasks/src/tinyKernel.c **** }
+  94              		.loc 1 24 1 is_stmt 0 view .LVU12
+  95 0000 0020     		movs	r0, #0
+  96              	.LVL4:
+  97              		.loc 1 24 1 view .LVU13
+  98 0002 7047     		bx	lr
+  99              		.cfi_endproc
+ 100              	.LFE5:
+ 102              		.global	tinyTask_stack
+ 103              		.section	.bss.tinyTask_stack,"aw",%nobits
+ 104              		.align	2
+ 107              	tinyTask_stack:
+ 108 0000 00000000 		.space	1638400
+ 108      00000000 
+ 108      00000000 
+ 108      00000000 
+ 108      00000000 
+ 109              		.text
+ 110              	.Letext0:
+ 111              		.file 2 "/home/eddie/MaximSDK/Tools/GNUTools/arm-none-eabi/include/machine/_default_types.h"
+ 112              		.file 3 "/home/eddie/MaximSDK/Tools/GNUTools/arm-none-eabi/include/sys/_stdint.h"
+ 113              		.file 4 "tinyTasks/inc/tinyTasksError.h"
+ 114              		.file 5 "tinyTasks/inc/tinyTasksConfig.h"
+ARM GAS  /tmp/ccTee9Js.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 tinyKernel.c
+     /tmp/ccTee9Js.s:20     .rodata.tinyKernel_init.str1.4:0000000000000000 $d
+     /tmp/ccTee9Js.s:24     .text.tinyKernel_init:0000000000000000 $t
+     /tmp/ccTee9Js.s:30     .text.tinyKernel_init:0000000000000000 tinyKernel_init
+     /tmp/ccTee9Js.s:50     .text.tinyKernel_init:0000000000000008 $d
+     /tmp/ccTee9Js.s:55     .text.tinyKernel_run:0000000000000000 $t
+     /tmp/ccTee9Js.s:61     .text.tinyKernel_run:0000000000000000 tinyKernel_run
+     /tmp/ccTee9Js.s:78     .text.tinyKetnell_addTask:0000000000000000 $t
+     /tmp/ccTee9Js.s:84     .text.tinyKetnell_addTask:0000000000000000 tinyKetnell_addTask
+     /tmp/ccTee9Js.s:107    .bss.tinyTask_stack:0000000000000000 tinyTask_stack
+     /tmp/ccTee9Js.s:104    .bss.tinyTask_stack:0000000000000000 $d
+
+UNDEFINED SYMBOLS
+printMsg
