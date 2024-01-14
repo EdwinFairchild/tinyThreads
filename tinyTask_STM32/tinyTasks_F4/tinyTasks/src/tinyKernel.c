@@ -29,9 +29,11 @@ TinyTasksStatus tinyKernel_init(void)
     return err;
 }
 
-    /*  set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
-        stacks are in decending order 
-        this is why we set the stack pointer to the last element of the stack */
+/**************************************************************************
+* set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
+* stacks are in decending order 
+* this is why we set the stack pointer to the last element of the stack 
+***************************************************************************/
 TinyTasksStatus tinyKernel_task_stack_init(uint32_t taskIDX){
     TinyTasksStatus err = TINYTASKS_OK;
 
