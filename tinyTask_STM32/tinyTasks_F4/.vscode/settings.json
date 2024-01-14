@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "tinytaskserror.h": "c",
+        "stdint.h": "c"
+    }
+}
