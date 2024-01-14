@@ -35,8 +35,10 @@ typedef struct tinyTask_tcb{
 
 /* Static allocation of Task Control Block Array*/
 tinyTask_tcb_t tinyTask_task_ctl[TINYTASKS_MAX_TASKS];
+tinyTask_tcb *tinyTask_current_tcb = NULL;
 typedef uint32_t tinyTask_tcb_idx;
 tinyTask_tcb_idx tinyTasks_task_Count = 0;
+
 
 /***************| system tick |**********************/
 uint32_t tinyTask_tick = 0;
@@ -75,14 +77,17 @@ TinyTasksStatus tinyKernel_init(void)
     tinyKernel_addTask(task1,530);
     tinyKernel_addTask(task2,420);
 
-    // TODO : use pendSV instead of systick
+    // initialize current task control block
+    tinyTask_current_tcb = &tinyTask_task_ctl[0];
+
+    // TODO : use timer periph instead of systick
     //enable systick interrupt
     NVIC_SetPriority(SysTick_IRQn, 15);
     NVIC_EnableIRQ(SysTick_IRQn);
     // start systick timer with 1 ms period
     SysTick_Config(SystemCoreClock / 1000);
 
-    //enable pendsv interrupt
+    //enable pendsv interrupt used for task switching
     NVIC_SetPriority(PendSV_IRQn, 15);
     NVIC_EnableIRQ(PendSV_IRQn);
 
@@ -163,13 +168,9 @@ TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period){
     return err;
 }
 
-__attribute__((naked)) TinyTasksScheduler(void)
-{
-
-}
-
 void tinyTask_isr_task_switch(uint32_t tick)
 {
+    // TODO : get period from current task control block
     if(tick > 1000)
     {
         // only switch if current tasks time has expired
@@ -182,3 +183,48 @@ void tinyTask_isr_task_switch(uint32_t tick)
 }
 
 
+__attribute__((naked)) void PendSV_Handler(void)
+{
+    // disble interrupts
+    __disable_irq();
+    //clear pendsv interrupt
+    SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
+
+    /************************ Suspend and save current task ************************/
+    //save r4-r11 on the stack
+    __asm("PUSH {r4-r11}");
+    // load address of current tinyTask_tcb into r0
+    __asm("LDR r0, =tinyTask_current_tcb");
+    /*  derefrence the address at r0 (get the value at that address)
+        the address found at the first element of the tinyTask_tcb struct is the stack pointer
+        now R1 will contain the address of the stack pointer for the current tinyTask_tcb
+    */
+    __asm("LDR r1, [r0]");
+    /*  save the current stack pointer register  
+        into the address pointed to by r1 which is the stack pointer for the current tinyTask_tcb
+    */
+    __asm("STR sp, [r1]");
+
+    /************************ Restore next task ************************/
+
+    /*  Since R1 current holds the address of the stack pointer of the current tinyTask_tcb
+        then 4 bytes above that address is the next pointer, add 4 to r1 and reload it into r1*/
+    __asm("LDR r1, [r1, #4]");
+    /*  Since R1 now points to the next tinyTask_tcb and the first element of any tinyTask_tcb struct
+        is the stack pointer for that given taks stack, now load the value at the address pointed to by r1 
+        into the stack pointer register
+    */
+    __asm("LDR sp, [r1]");
+    /*  R1 still containts next tasks address, so lets update tinyTask_current_tcb whos address 
+        we should still have in R0 from above */
+    __asm("STR r1, [r0]");
+
+    /*  restore r4-r11 from the stack, since we just updated the stack pointer to point to the next tasks stack
+        it will pop the values from there.
+    */
+    __asm("POP {r4-r11}");
+
+    // enable interrupts
+    __enable_irq();
+
+}

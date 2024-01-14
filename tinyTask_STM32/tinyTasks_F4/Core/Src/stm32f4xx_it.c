@@ -170,17 +170,17 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles Pendable request for system service.
   */
-void PendSV_Handler(void)
-{
-  /* USER CODE BEGIN PendSV_IRQn 0 */
-  //clear pendsv interrupt
-  SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
-  tinyTask_printMsg("PendSV\r\n");
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
+// void PendSV_Handler(void)
+// {
+//   /* USER CODE BEGIN PendSV_IRQn 0 */
+//   //clear pendsv interrupt
+//   SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
+//   tinyTask_printMsg("PendSV\r\n");
+//   /* USER CODE END PendSV_IRQn 0 */
+//   /* USER CODE BEGIN PendSV_IRQn 1 */
 
-  /* USER CODE END PendSV_IRQn 1 */
-}
+//   /* USER CODE END PendSV_IRQn 1 */
+// }
 
 /**
   * @brief This function handles System tick timer.
