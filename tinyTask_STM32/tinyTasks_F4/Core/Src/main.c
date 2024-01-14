@@ -50,6 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+  static uint32_t count = 0;
 
 /* USER CODE END PV */
 
@@ -117,7 +118,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint32_t count = 0;
+
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
