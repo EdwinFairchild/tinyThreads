@@ -59,6 +59,7 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
 Core/Src/system_stm32f4xx.c \
 tinyTasks/src/tinyKernel.c \
+tinyTasks/src/tinyTasks_port.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c
 # ASM sources
 # ASM sources# ASM sources

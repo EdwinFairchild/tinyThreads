@@ -2,6 +2,7 @@
     "files.associations": {
         "tinytaskserror.h": "c",
         "stdint.h": "c",
-        "cmsis_armclang.h": "c"
+        "cmsis_armclang.h": "c",
+        "tinytasksport.h": "c"
     }
 }

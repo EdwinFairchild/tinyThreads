@@ -4,6 +4,20 @@
 
 // TODO: remove Debugging-----------
 extern void printMsg(char *msg, ...);
+void (*funct_ptr)(void);
+extern void HAL_Delay(uint32_t Delay);
+void task1(void){
+    while(1){
+    printMsg("Task 1\r\n");
+    HAL_Delay(500);
+    }
+}
+void task2(void){
+    while(1){
+    printMsg("Task 2\r\n");
+    HAL_Delay(1500);
+    }
+}
 //---------------------
 
 /* Reserve stack space */
@@ -19,21 +33,68 @@ typedef struct tinyTask_tcb{
     
 }tinyTask_tcb;
 
-/* Task Control Block Array */
+/* Static allocation of Task Control Block Array*/
 tinyTask_tcb_t tinyTask_task_ctl[TINYTASKS_MAX_TASKS];
 typedef uint32_t tinyTask_tcb_idx;
-tinyTask_tcb_idx currentInitTask = 0;
+tinyTask_tcb_idx tinyTasks_task_Count = 0;
 
+/***************| system tick |**********************/
+uint32_t tinyTask_tick = 0;
 
-TinyTasksStatus tinyKernel_init(void)
+/**************************************************************************
+* Task control block linked list functions
+***************************************************************************/
+
+/**************************************************************************
+* Attempt to add a new task to the linked list
+***************************************************************************/
+static TinyTasksStatus tinyTask_tcb_ll_add(uint32_t period)
 {
     TinyTasksStatus err = TINYTASKS_OK;
-     printMsg("Starting tinyTasks Kernel\r\n");
+    if(tinyTasks_task_Count >= TINYTASKS_MAX_TASKS){
+        err = TINYTASKS_MAX_TASKS_REACHED;
+    }
+    tinyTask_task_ctl[tinyTasks_task_Count].period = period;
+    tinyTask_task_ctl[tinyTasks_task_Count].next = NULL;
+    //if list is not empty simpy add the task to next pointer of previous task
+    if(tinyTasks_task_Count !=0){
+        tinyTask_task_ctl[tinyTasks_task_Count - 1].next = &tinyTask_task_ctl[tinyTasks_task_Count];        
+    }
     return err;
 }
 
 /**************************************************************************
-* set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
+ * Initialize the kernel:
+ *  - Initialize the linked list of tasks
+ *  - There should be atleast 1 task running at all times
+ **************************************************************************/
+TinyTasksStatus tinyKernel_init(void)
+{
+    TinyTasksStatus err = TINYTASKS_OK;
+    printMsg("Starting tinyTasks Kernel\r\n");
+    tinyKernel_addTask(task1,530);
+    tinyKernel_addTask(task2,420);
+
+    // TODO : use pendSV instead of systick
+    //enable systick interrupt
+    NVIC_SetPriority(SysTick_IRQn, 15);
+    NVIC_EnableIRQ(SysTick_IRQn);
+    // start systick timer with 1 ms period
+    SysTick_Config(SystemCoreClock / 1000);
+
+    //enable pendsv interrupt
+    NVIC_SetPriority(PendSV_IRQn, 15);
+    NVIC_EnableIRQ(PendSV_IRQn);
+
+
+
+
+    return err;
+}
+
+/**************************************************************************
+* - Initializes the stack for a task to mostly dummy values
+*  -set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
 * stacks are in decending order 
 * this is why we set the stack pointer to the last element of the stack 
 ***************************************************************************/
@@ -68,34 +129,56 @@ TinyTasksStatus tinyKernel_run(void){
     
     return err;
 }
-
-TinyTasksStatus tinyKetnell_addTask(void (*task)(void), uint32_t period){
+/**************************************************************************
+ * Add a task to the linked list
+ * - Add the task to the linked list
+ * - Initialize the stack for the task
+ * - Initialize the PC for the task to the task function
+ *   this is only valid on initilization, during execution the PC can be
+ *   anywhere in the task function
+ * - Increment the tinyTasks_task_Count
+ * 
+ *  TODO: make a task type with period and other things , also make task type 
+ *  accept a 32bit argument that can be used to pass messages in the form of
+ * a pointer to a struct or literal number
+ **************************************************************************/
+TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period){
     TinyTasksStatus err = TINYTASKS_OK;
     /* disable interrupts */
     __disable_irq();
-    if(currentInitTask <= (TINYTASKS_MAX_TASKS -1)){
-        // todo make this into a proper linked list with linked list functions for adding tasks
-        tinyTask_task_ctl[currentInitTask].next = &tinyTask_task_ctl[currentInitTask + 1];
-        //since this is a round robin scheduler this task will run for the period and then the next task will run
-        tinyTask_task_ctl[currentInitTask].period = period;
-        tinyKernel_task_stack_init(currentInitTask);
+    if(tinyTasks_task_Count <= (TINYTASKS_MAX_TASKS -1) && task != NULL){
+        tinyTask_tcb_ll_add(period);
+        tinyKernel_task_stack_init(tinyTasks_task_Count);
         // initialize PC , initial program counter just points to the task
         // during context switch we will push the PC to the stack
         // and pop it off when we want to return to the task at its proper place
-        tinyTask_stack[currentInitTask][TINYTASKS_STACK_SIZE - 2] = (uint32_t)task;
-
-
-        currentInitTask++;
+        tinyTask_stack[tinyTasks_task_Count][TINYTASKS_STACK_SIZE - 2] = (uint32_t)task;
+        tinyTasks_task_Count++;
     }
     else{
         err = TINYTASKS_MAX_TASKS_REACHED;
     }
+    /* enable interrupts */
+    __enable_irq();
     return err;
 }
 
 __attribute__((naked)) TinyTasksScheduler(void)
 {
-    TinyTasksStatus err = TINYTASKS_OK;
 
-    return err;
 }
+
+void tinyTask_isr_task_switch(uint32_t tick)
+{
+    if(tick > 1000)
+    {
+        // only switch if current tasks time has expired
+        tinyTask_printMsg("Task Switch\r\n");
+        tinyTask_tick_reset();
+        // generate pendsv interrupt
+        SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
+    }
+}
+
+
