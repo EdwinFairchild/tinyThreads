@@ -4,7 +4,7 @@
         {
             "name": "Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "flash-device",
+            "preLaunchTask": "flash",
             "executable": "./build/tinyTasks_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
@@ -25,7 +25,7 @@
         {
             "name": "Erase & Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "erase-flash-device",
+            "preLaunchTask": "wipe & flash",
             "executable": "./build/tinyTasks_F4.elf",
             "request": "launch",
             "type": "cortex-debug",

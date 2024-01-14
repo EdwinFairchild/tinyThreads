@@ -2,22 +2,35 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "flash-device",
+            "label": "build",
             "type": "shell",
-            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyTasks_F4.elf verify reset exit'"
-            
+            "command": "make -j"
+
         },
         {
-            "label": "erase-device",
+            "label": "clean",
+            "type": "shell",
+            "command": "make clean"
+        },
+        {
+            "label": "flash",
+            "type": "shell",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyTasks_F4.elf verify reset exit'",
+            "dependsOn": ["clean" , "build"],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "mass erase",
             "type": "shell",
             "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'init; reset halt; stm32f4x mass_erase 0; exit'"
             
         },
         {
-            "label": "erase-flash-device",
+            "label": "wipe & flash",
             "type": "shell",
-            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'init; reset halt; stm32f4x mass_erase 0; program build/tinyTasks_F4.elf verify reset exit'"
-            
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyTasks_F4.elf verify reset exit'",
+            "dependsOn": ["clean" , "mass erase", "build"],
+            "dependsOrder": "sequence"
         }
     ]
 }
