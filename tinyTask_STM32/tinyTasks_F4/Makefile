@@ -61,6 +61,7 @@ Core/Src/system_stm32f4xx.c \
 tinyTasks/src/tinyKernel.c \
 tinyTasks/src/tinyTasks_port.c \
 tinyTasks/src/tinyTasks_system.c \
+tinyTasks/src/tinyTasks_task.c \
 tinyTasks/src/tinyTasks_debug.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c
 # ASM sources

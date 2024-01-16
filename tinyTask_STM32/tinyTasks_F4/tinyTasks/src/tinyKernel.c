@@ -16,8 +16,12 @@ typedef struct tinyTask_tcb  tinyTask_tcb_t;
 typedef struct tinyTask_tcb{
     uint32_t *stackPointer; // Pointer to the current stack pointer
     tinyTask_tcb_t *next;   // Pointer to the next task
-    uint32_t period;        // Period of the task
-    
+    tinyTask_tcb_t *prev;   // Pointer to the previous task
+    tinyTaskPeriod_t period_ms;        // Period of the task
+    tinyTasksTime_t lastRunTime;       // Last time the task ran
+    tinyTaskPriority_t priority;      // Priority of the task
+    tinyTasksState_t state;         // State of the task
+
 }tinyTask_tcb;
 
 /* Static allocation of Task Control Block Array*/
@@ -46,7 +50,7 @@ static TinyTasksStatus tinyTask_tcb_ll_add(uint32_t period)
     if(tinyTasks_task_Count >= TINYTASKS_MAX_TASKS){
         err = TINYTASKS_MAX_TASKS_REACHED;
     }
-    tinyTask_task_ctl[tinyTasks_task_Count].period = period;
+    tinyTask_task_ctl[tinyTasks_task_Count].period_ms = period;
     tinyTask_task_ctl[tinyTasks_task_Count].next = NULL;
     //if list is not empty simpy add the task to next pointer of previous task
     if(tinyTasks_task_Count !=0){
@@ -96,6 +100,7 @@ TinyTasksStatus tinyKernel_task_stack_init(uint32_t taskIDX){
     /*  initialize the stack pointer
         R13 is stack pointer, we manages the register manually using the stack pointer blow */
     tinyTask_task_ctl[taskIDX].stackPointer = &tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 16];
+    tinyTask_task_ctl[taskIDX].lastRunTime = tinyTask_tick_get();
     
     tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 1] |= (1 << 24); // xPSR --------
     /*  The PC get initialized in tinyKernel_addTask                               |
@@ -201,19 +206,28 @@ TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period){
     return err;
 }
 
-void tinyTask_isr_task_switch(uint32_t tick)
+// TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c 
+void tinyTask_isr_system_task(void)
 {
-    // check the task control block to see if its time to switch it out
-    // TODO : get period from current task control block
-    if(tick > 1000)
+    // increment the system tick
+    tinyTasksTime_t tick = tinyTask_tick_inc();
+
+    // check the task control block to see if its time to switch it out (Round Robin)
+    if(tinyTask_current_tcb->period_ms <= (tick - tinyTask_current_tcb->lastRunTime))
     {
-        // only switch if current tasks time has expired
-        //printf("Task Switch\r\n");
-        tinyTask_tick_reset();
         // generate pendsv interrupt
         SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-
     }
+    // // TODO : get period from current task control block
+    // if(tick > 1000)
+    // {
+    //     // // only switch if current tasks time has expired
+    //     // //printf("Task Switch\r\n");
+    //     // tinyTask_tick_reset();
+    //     // generate pendsv interrupt
+    //     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
+    // }
 }
 
 
@@ -251,7 +265,7 @@ __attribute__((naked)) void PendSV_Handler(void)
 
     /*  Since R1 current holds the address of the stack pointer of the current tinyTask_tcb
         then 4 bytes above that address is the next pointer, add 4 to r1 and reload it into r1*/
-    __asm("LDR r1, [r1, #4]");
+    __asm("LDR r1, [r1, %0]"::"I" (TINYTASK_TCB_NEXT_PTR_OFFSET));
     /*  Since R1 now points to the next tinyTask_tcb and the first element of any tinyTask_tcb struct
         is the stack pointer for that given taks stack, now load the value at the address pointed to by r1 
         into the stack pointer register
@@ -260,6 +274,14 @@ __attribute__((naked)) void PendSV_Handler(void)
     /*  R1 still containts next tasks address, so lets update tinyTask_current_tcb whos address 
         we should still have in R0 from above */
     __asm("STR r1, [r0]");
+
+    /* tinyTask_current_tcb has a timestamp 5 words from the start lets update that to tick value*/
+    __asm("LDR r2, =tinyTask_tick");
+    __asm("LDR r2, [r2]");
+   // __asm("STR r2, [r1, #16]");
+    __asm__("STR r2, [r1, %0]"::"I" (TINYTASK_TCB_LAST_RUNTIME_OFFSET));
+   
+
 
     /*  restore r4-r11 from the stack, since we just updated the stack pointer to point to the next tasks stack
         it will pop the values from there.
@@ -278,7 +300,10 @@ __attribute__((naked)) void PendSV_Handler(void)
 
 static void systemTask(void){
     while(1){
-    printf("SysTask\r\n");
-    HAL_Delay(1500);
+
     }
+}
+
+tinyTasksTime_t tinyKernel_getTaskLastRunTime(){
+    return tinyTask_current_tcb->lastRunTime;
 }

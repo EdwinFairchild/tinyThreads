@@ -189,7 +189,7 @@ void DebugMon_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-  tinyTask_isr_task_switch(tinyTask_tick_inc());
+  tinyTask_isr_system_task();
   /* USER CODE END SysTick_IRQn 0 */
 
   /* USER CODE BEGIN SysTick_IRQn 1 */

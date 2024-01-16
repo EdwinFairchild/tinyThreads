@@ -31,7 +31,9 @@
 #include "errno.h"
 #include <sys/unistd.h> // For STDOUT_FILENO, STDERR_FILENO
 #include "tinyKernel.h"
+#include "tinyTasks_types.h"
 #include "tinyTasksError.h"
+#include "tinyTasks_task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -87,15 +89,24 @@ int _write(int file, char *data, int len) {
 }
 
 void task1(void){
+  static uint32_t prev_runtime = 0;
     while(1){
-    printf("Task 1\r\n");
-    HAL_Delay(500);
+    //elapsed time since last run
+    uint32_t currentTime = tinyTask_tick_get();
+    uint32_t elapsed_time = currentTime - tinyKernel_getTaskLastRunTime();
+    printf("Task 1: %d\r\n", elapsed_time);
+   
+    
     }
 }
 void task2(void){
+    static uint32_t prev_runtime = 0;
     while(1){
-    printf("Task 2\r\n");
-    HAL_Delay(1500);
+    //elapsed time since last run
+    uint32_t currentTime = tinyTask_tick_get();
+    uint32_t elapsed_time = currentTime - tinyKernel_getTaskLastRunTime();
+    printf("Task 2: %d\r\n", elapsed_time);
+    
     }
 }
 
@@ -133,8 +144,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   //  add user tasks
   if(tinyKernel_init() == TINYTASKS_OK){
-  tinyKernel_addTask(task1,530);
-  tinyKernel_addTask(task2,420);
+  tinyKernel_addTask(task1,2000);
+  tinyKernel_addTask(task2,3000);
     tinyKernel_run(); // should not return from this
   }else{
     printf("!!! Error initializing tinyKernel !!!\r\n");
