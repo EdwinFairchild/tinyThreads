@@ -5,6 +5,11 @@
 #define SYSTEM_CLCOCK_FREQ_MHZ 80
 #define TINYTASKS_NUMBER_OF_TASKS  2
 #define TINYTASKS_STACK_SIZE 1000
+
+/* ---------- Scheduling ----------*/
+#define TINYTASK_ROUND_ROBIN 1
+
+/* ---------- Debugging ----------*/
 #define TINYTASKS_DEBUG 1
 
 

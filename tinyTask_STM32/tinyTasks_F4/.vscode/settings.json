@@ -7,7 +7,8 @@
         "usart.h": "c",
         "stdbool.h": "c",
         "stdio.h": "c",
-        "tinytasksconfig.h": "c"
+        "tinytasksconfig.h": "c",
+        "tinytasks_debug.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

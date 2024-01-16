@@ -203,6 +203,7 @@ TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period){
 
 void tinyTask_isr_task_switch(uint32_t tick)
 {
+    // check the task control block to see if its time to switch it out
     // TODO : get period from current task control block
     if(tick > 1000)
     {

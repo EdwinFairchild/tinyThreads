@@ -11,6 +11,7 @@
 #include "tinyTasksConfig.h"
 #include "tinyTasksPort.h"
 #include "tinyTasks_debug.h"
+#include "tinyTasks_system.h"
 
 /*************| Exception frame |********************
 These are the registers that are pushed onto the stack
