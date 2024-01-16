@@ -12,6 +12,6 @@
     // Add more error codes as needed
 }TinyTasksStatus;
 
-//typedef enum TinyTasksStatus TinyTasksStatus;
+const char* errorToString(TinyTasksStatus err);
 
 #endif // TINYTASKSERROR_H

@@ -28,6 +28,8 @@
 #include "stdint.h"
 #include "stdarg.h"
 #include "string.h"
+#include "errno.h"
+#include <sys/unistd.h> // For STDOUT_FILENO, STDERR_FILENO
 #include "tinyKernel.h"
 #include "tinyTasksError.h"
 /* USER CODE END Includes */
@@ -62,21 +64,41 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void printMsg(char *msg, ...)
-{	
-	char buff[80];	
-	va_list args;
-	va_start(args, msg);
-	vsprintf(buff, msg, args);
-		
-	for (int i = 0; i < strlen(buff); i++)
-	{		
-		USART2->DR = buff[i];
-		while( !( USART2->SR & USART_SR_TXE )  );
-	}		
-		
-	while (!(USART2->SR & USART_SR_TC));		
+/*retarget printf */
+int _write(int file, char *data, int len) {
+    // Only write to STDOUT and STDERR
+    if ((file != STDOUT_FILENO) && (file != STDERR_FILENO)) {
+        errno = EBADF;
+        return -1;
+    }
+
+    // Transmit data using UART2
+    for (int i = 0; i < len; i++) {
+        // Wait for the transmit buffer to be empty
+        while (!(USART2->SR & USART_SR_TXE));
+        // Send the character
+        USART2->DR = (uint16_t)data[i];
+    }
+
+    // Wait for the transmission of the last byte to complete
+    while (!(USART2->SR & USART_SR_TC));
+
+    return len;
 }
+
+void task1(void){
+    while(1){
+    printf("Task 1\r\n");
+    HAL_Delay(500);
+    }
+}
+void task2(void){
+    while(1){
+    printf("Task 2\r\n");
+    HAL_Delay(1500);
+    }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -109,10 +131,13 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  //  add user tasks
   if(tinyKernel_init() == TINYTASKS_OK){
+  tinyKernel_addTask(task1,530);
+  tinyKernel_addTask(task2,420);
     tinyKernel_run(); // should not return from this
   }else{
-    printMsg("!!! Error initializing tinyKernel !!!\r\n");
+    printf("!!! Error initializing tinyKernel !!!\r\n");
   }
   /* USER CODE END 2 */
 
@@ -122,7 +147,7 @@ int main(void)
   while (1)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    printMsg("Error should not be here %d\r\n",count++);
+    printf("Error should not be here %d\r\n",count++);
     HAL_Delay(500);
     /* USER CODE END WHILE */
 

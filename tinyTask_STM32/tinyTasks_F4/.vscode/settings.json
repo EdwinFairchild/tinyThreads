@@ -3,6 +3,11 @@
         "tinytaskserror.h": "c",
         "stdint.h": "c",
         "cmsis_armclang.h": "c",
-        "tinytasksport.h": "c"
-    }
+        "tinytasksport.h": "c",
+        "usart.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c",
+        "tinytasksconfig.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }

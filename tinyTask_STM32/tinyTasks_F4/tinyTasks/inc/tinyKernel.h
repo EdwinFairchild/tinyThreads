@@ -10,17 +10,22 @@
 #include "tinyTasksError.h"
 #include "tinyTasksConfig.h"
 #include "tinyTasksPort.h"
+#include "tinyTasks_debug.h"
 
-/* Macros for readability */
-/***************| Exception frame |**********************
-xPSR - top of stack
-PC (R15) - top of stack -1
-LR (R14)
-R12
-R3
-R2
+/*************| Exception frame |********************
+These are the registers that are pushed onto the stack
+when an exception occurs. The stack grows from high
+addresses to low addresses. The stack pointer points to
+the top of the stack. The exception frame is pushed onto
+the stack in the following order:
+R0 (lowest address value)
 R1
-R0
+R2
+R3
+R12
+LR (R14)
+PC (R15)
+xPSR - top of stack (highest address value)
 *******************************************************/
 #define TT_TOTAL_STACK_SIZE (TINYTASKS_MAX_TASKS * TINYTASKS_STACK_SIZE)
 #define TT_TOP_OF_STACK (TINYTASKS_STACK_SIZE - 1U)
@@ -32,6 +37,9 @@ R0
 #define TT_EXCEPTION_FRAME_R2 (TT_TOP_OF_STACK - 5U)
 #define TT_EXCEPTION_FRAME_R1 (TT_TOP_OF_STACK - 6U)
 #define TT_EXCEPTION_FRAME_R0 (TT_TOP_OF_STACK - 7U)
+
+#define TINYTASKS_NUM_OF_SYS_TASKS 1
+#define TINYTASKS_MAX_TASKS (TINYTASKS_NUMBER_OF_TASKS+TINYTASKS_NUM_OF_SYS_TASKS)
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyTask_tick;

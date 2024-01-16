@@ -3,21 +3,8 @@
 #include "tinyTasksConfig.h"
 
 // TODO: remove Debugging-----------
-extern void printMsg(char *msg, ...);
-void (*funct_ptr)(void);
-extern void HAL_Delay(uint32_t Delay);
-void task1(void){
-    while(1){
-    printMsg("Task 1\r\n");
-    HAL_Delay(500);
-    }
-}
-void task2(void){
-    while(1){
-    printMsg("Task 2\r\n");
-    HAL_Delay(1500);
-    }
-}
+
+
 //---------------------
 
 /* Reserve stack space */
@@ -43,6 +30,8 @@ tinyTask_tcb_idx tinyTasks_task_Count = 0;
 /***************| system tick |**********************/
 uint32_t tinyTask_tick = 0;
 
+static void systemTask(void);
+
 /**************************************************************************
 * Task control block linked list functions
 ***************************************************************************/
@@ -53,6 +42,7 @@ uint32_t tinyTask_tick = 0;
 static TinyTasksStatus tinyTask_tcb_ll_add(uint32_t period)
 {
     TinyTasksStatus err = TINYTASKS_OK;
+    // Add to account for system task
     if(tinyTasks_task_Count >= TINYTASKS_MAX_TASKS){
         err = TINYTASKS_MAX_TASKS_REACHED;
     }
@@ -62,6 +52,11 @@ static TinyTasksStatus tinyTask_tcb_ll_add(uint32_t period)
     if(tinyTasks_task_Count !=0){
         tinyTask_task_ctl[tinyTasks_task_Count - 1].next = &tinyTask_task_ctl[tinyTasks_task_Count];        
     }
+    //if this is the last taks point the next pointer to the first task
+    if(tinyTasks_task_Count == (TINYTASKS_MAX_TASKS - 1)){
+        tinyTask_task_ctl[tinyTasks_task_Count].next = &tinyTask_task_ctl[0];
+    }
+
     return err;
 }
 
@@ -73,26 +68,18 @@ static TinyTasksStatus tinyTask_tcb_ll_add(uint32_t period)
 TinyTasksStatus tinyKernel_init(void)
 {
     TinyTasksStatus err = TINYTASKS_OK;
-    printMsg("Starting tinyTasks Kernel\r\n");
-    tinyKernel_addTask(task1,530);
-    tinyKernel_addTask(task2,420);
+    // add system related tasks
+    err = tinyKernel_addTask(systemTask, 10);
+    // os cannot function without system task
+    if(err != TINYTASKS_OK){
+        return err;
+    }
 
     // initialize current task control block
     tinyTask_current_tcb = &tinyTask_task_ctl[0];
 
-    // TODO : use timer periph instead of systick
-    //enable systick interrupt
-    NVIC_SetPriority(SysTick_IRQn, 15);
-    NVIC_EnableIRQ(SysTick_IRQn);
-    // start systick timer with 1 ms period
-    SysTick_Config(SystemCoreClock / 1000);
-
-    //enable pendsv interrupt used for task switching
-    NVIC_SetPriority(PendSV_IRQn, 15);
-    NVIC_EnableIRQ(PendSV_IRQn);
-
-
-
+    tinyTask_port_enable_tick_timer();
+    tinyTasks_enable_context_switching_isr();
 
     return err;
 }
@@ -105,33 +92,77 @@ TinyTasksStatus tinyKernel_init(void)
 ***************************************************************************/
 TinyTasksStatus tinyKernel_task_stack_init(uint32_t taskIDX){
     TinyTasksStatus err = TINYTASKS_OK;
-    // TODO : make macro for top of stack is 512-1
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 1] |= (1 << 24); // xPSR
+    
+    /*  initialize the stack pointer
+        R13 is stack pointer, we manages the register manually using the stack pointer blow */
+    tinyTask_task_ctl[taskIDX].stackPointer = &tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 16];
+    
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 1] |= (1 << 24); // xPSR --------
+    /*  The PC get initialized in tinyKernel_addTask                               |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 3] = 0xe2345678; // R14 (LR)    |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 4] = 0x12345678; // R12         |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 5] = 0x22345678; // R3          ---- Exception frame
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 6] = 0x32345678; // R2          |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 7] = 0x42345678; // R1          |
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 8] = 0x52345678; // R0 ----------
 
-    // stack pointer will get initialized elsewhere 
-    // tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 2] = (uint32_t)taskControlBlocks[taskIDX].stackPointer;
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 3] = 0x12345678; // R14 (LR)
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 4] = 0x12345678; // R12 
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 5] = 0x12345678; // R3 
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 6] = 0x12345678; // R2
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 7] = 0x12345678; // R1
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 8] = 0x12345678; // R0
-
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 9] = 0x12345678; // R11
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 10] = 0x12345678; // R10
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 11] = 0x12345678; // R9
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 12] = 0x12345678; // R8
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 13] = 0x12345678; // R7
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 14] = 0x12345678; // R6
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 15] = 0x12345678; // R5
-    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 16] = 0x12345678; // R4
+    // R4-R11 are general purpose registers that are optional to save
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE -  9] = 0x62345678; // R11           
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 10] = 0x72345678; // R10
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 11] = 0x82345678; // R9
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 12] = 0x92345678; // R8
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 13] = 0xa2345678; // R7
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 14] = 0xb2345678; // R6
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 15] = 0xc2345678; // R5
+    tinyTask_stack[taskIDX][TINYTASKS_STACK_SIZE - 16] = 0xd2345678; // R4
     
     return err;
 }
 
+/**************************************************************************
+ * Run the kernel
+ * - Load the stack pointer for the current task
+ * - Pop the exception frame from the stack and return to the task
+ **************************************************************************/
 TinyTasksStatus tinyKernel_run(void){
     TinyTasksStatus err = TINYTASKS_OK;
-    
+    // disable interrupts
+    __disable_irq();
+    /*  Load the address of tinyTask_current_tcb into R0 */
+    __asm("LDR r0, =tinyTask_current_tcb");
+    /*  Dereference the address at R0 
+        the first element of the tinyTask_tcb struct is the tak's stack pointer
+        Now R1 will contain the address of the stack pointer for the current tinyTask_tcb
+    */
+    __asm("LDR r1, [r0]");
+    /*  Load the value at the address pointed to by R1 (stak's stack pointer)
+        into the stack pointer register */
+    __asm("LDR sp, [r1]");
+    /*  Pop the exception frame from the stack and return to the task */
+    __asm("POP {r4-r11}");
+   
+    __asm("POP {r12}");
+    __asm("POP {r0-r3}");
+    /*  skip LR in our stack by adding 4 the current SP */
+    __asm("ADD sp, sp, 4");
+    /*  Now we are at the PC in our stack, pop that into the LR 
+        this will cause the processor to jump to the task function.
+        The PC in our task was initialized in tinyKernel_addTask2
+     */
+    __asm("POP {lr}");
+    /*  skip psr by adding 4 the current SP */
+    __asm("ADD sp, sp, #4");
+
+    /* enable interrupts */
+    __enable_irq();
+
+    /*  return from exception 
+        this will jump to the value in the LR register
+        which is the task function
+    */
+    __asm("BX LR");
+
     return err;
 }
 /**************************************************************************
@@ -162,9 +193,11 @@ TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period){
     }
     else{
         err = TINYTASKS_MAX_TASKS_REACHED;
+        
     }
     /* enable interrupts */
     __enable_irq();
+    debug(err);
     return err;
 }
 
@@ -174,7 +207,7 @@ void tinyTask_isr_task_switch(uint32_t tick)
     if(tick > 1000)
     {
         // only switch if current tasks time has expired
-        tinyTask_printMsg("Task Switch\r\n");
+        //printf("Task Switch\r\n");
         tinyTask_tick_reset();
         // generate pendsv interrupt
         SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
@@ -183,12 +216,20 @@ void tinyTask_isr_task_switch(uint32_t tick)
 }
 
 
+    /* enter exception
+        this will push the exception frame onto the stack
+        and set the stack pointer to the top of the stack, knowing this
+        information we save the stack pointer for the current task
+        and load the stack pointer for the next task
+    */    
 __attribute__((naked)) void PendSV_Handler(void)
 {
+    
     // disble interrupts
     __disable_irq();
     //clear pendsv interrupt
     SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
+    NVIC_EnableIRQ(PendSV_IRQn);
 
     /************************ Suspend and save current task ************************/
     //save r4-r11 on the stack
@@ -227,4 +268,16 @@ __attribute__((naked)) void PendSV_Handler(void)
     // enable interrupts
     __enable_irq();
 
+    /*  return from interrupt
+        this will pop the exception frame from the stack and return to the next task
+    */
+    __asm("BX LR");
+
+}
+
+static void systemTask(void){
+    while(1){
+    printf("SysTask\r\n");
+    HAL_Delay(1500);
+    }
 }
