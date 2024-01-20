@@ -1,6 +1,6 @@
 {
     "version": "2.0.0",
-    "tasks": [
+    "threads": [
         {
             "label": "build",
             "type": "shell",
@@ -15,7 +15,7 @@
         {
             "label": "flash",
             "type": "shell",
-            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyTasks_F4.elf verify reset exit'",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyThreads_F4.elf verify reset exit'",
             "dependsOn": ["clean" , "build"],
             "dependsOrder": "sequence"
         },
@@ -28,7 +28,7 @@
         {
             "label": "wipe & flash",
             "type": "shell",
-            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyTasks_F4.elf verify reset exit'",
+            "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyThreads_F4.elf verify reset exit'",
             "dependsOn": ["clean" , "mass erase", "build"],
             "dependsOrder": "sequence"
         }

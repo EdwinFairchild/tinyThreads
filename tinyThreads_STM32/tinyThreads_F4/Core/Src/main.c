@@ -31,9 +31,9 @@
 #include "errno.h"
 #include <sys/unistd.h> // For STDOUT_FILENO, STDERR_FILENO
 #include "tinyKernel.h"
-#include "tinyTasks_types.h"
-#include "tinyTasksError.h"
-#include "tinyTasks_task.h"
+#include "tinyThreads_types.h"
+#include "tinyThreads_error.h"
+#include "tinyThreads_thread.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,24 +88,24 @@ int _write(int file, char *data, int len) {
     return len;
 }
 
-void task1(void){
+void thread1(void){
   static uint32_t prev_runtime = 0;
     while(1){
     //elapsed time since last run
-    uint32_t currentTime = tinyTask_tick_get();
-    uint32_t elapsed_time = currentTime - tinyKernel_getTaskLastRunTime();
-    printf("Task 1: %d\r\n", elapsed_time);
+    uint32_t currentTime = tinyThread_tick_get();
+    uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+    printf("Thread 1: %d\r\n", elapsed_time);
    
     
     }
 }
-void task2(void){
+void thread2(void){
     static uint32_t prev_runtime = 0;
     while(1){
     //elapsed time since last run
-    uint32_t currentTime = tinyTask_tick_get();
-    uint32_t elapsed_time = currentTime - tinyKernel_getTaskLastRunTime();
-    printf("Task 2: %d\r\n", elapsed_time);
+    uint32_t currentTime = tinyThread_tick_get();
+    uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+    printf("Thread 2: %d\r\n", elapsed_time);
     
     }
 }
@@ -142,10 +142,10 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  //  add user tasks
+  //  add user threads
   if(tinyKernel_init() == TINYTASKS_OK){
-  tinyKernel_addTask(task1,2000);
-  tinyKernel_addTask(task2,3000);
+  tinyKernel_addThread(thread1,2000);
+  tinyKernel_addThread(thread2,3000);
     tinyKernel_run(); // should not return from this
   }else{
     printf("!!! Error initializing tinyKernel !!!\r\n");

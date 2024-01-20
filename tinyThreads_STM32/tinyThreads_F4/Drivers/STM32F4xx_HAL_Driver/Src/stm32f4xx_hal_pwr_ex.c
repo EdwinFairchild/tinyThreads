@@ -405,7 +405,7 @@ void HAL_PWREx_DisableLowRegulatorLowVoltage(void)
   *         This mode allows the CPU and the core logic to operate at a higher frequency
   *         than the normal mode for a given voltage scaling (scale 1, scale 2 or scale 3).   
   * @note   It is recommended to enter or exit Over-drive mode when the application is not running 
-  *         critical tasks and when the system clock source is either HSI or HSE. 
+  *         critical threads and when the system clock source is either HSI or HSE. 
   *         During the Over-drive switch activation, no peripheral clocks should be enabled.   
   *         The peripheral clocks must be enabled once the Over-drive mode is activated.   
   * @retval HAL status
@@ -452,7 +452,7 @@ HAL_StatusTypeDef HAL_PWREx_EnableOverDrive(void)
   *         This mode allows the CPU and the core logic to operate at a higher frequency
   *         than the normal mode for a given voltage scaling (scale 1, scale 2 or scale 3).    
   * @note   It is recommended to enter or exit Over-drive mode when the application is not running 
-  *         critical tasks and when the system clock source is either HSI or HSE. 
+  *         critical threads and when the system clock source is either HSI or HSE. 
   *         During the Over-drive switch activation, no peripheral clocks should be enabled.   
   *         The peripheral clocks must be enabled once the Over-drive mode is activated.
   * @retval HAL status

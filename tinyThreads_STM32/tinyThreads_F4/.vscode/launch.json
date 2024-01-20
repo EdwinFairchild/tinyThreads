@@ -4,8 +4,8 @@
         {
             "name": "Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "flash",
-            "executable": "./build/tinyTasks_F4.elf",
+            "preLaunchThread": "flash",
+            "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
@@ -25,8 +25,8 @@
         {
             "name": "Erase & Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchTask": "wipe & flash",
-            "executable": "./build/tinyTasks_F4.elf",
+            "preLaunchThread": "wipe & flash",
+            "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
@@ -44,7 +44,7 @@
         {
             "name": "Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "./build/tinyTasks_F4.elf",
+            "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",

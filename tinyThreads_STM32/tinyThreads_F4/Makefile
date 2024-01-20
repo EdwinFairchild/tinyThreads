@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = tinyTasks_F4
+TARGET = tinyThreads_F4
 
 
 ######################################
@@ -58,11 +58,11 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
 Core/Src/system_stm32f4xx.c \
-tinyTasks/src/tinyKernel.c \
-tinyTasks/src/tinyTasks_port.c \
-tinyTasks/src/tinyTasks_system.c \
-tinyTasks/src/tinyTasks_task.c \
-tinyTasks/src/tinyTasks_debug.c \
+tinyThreads/src/tinyKernel.c \
+tinyThreads/src/tinyThreads_port.c \
+tinyThreads/src/tinyThreads_system.c \
+tinyThreads/src/tinyThreads_thread.c \
+tinyThreads/src/tinyThreads_debug.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c
 # ASM sources
 # ASM sources# ASM sources
@@ -128,7 +128,7 @@ C_INCLUDES =  \
 -IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
--ItinyTasks/inc
+-ItinyThreads/inc
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

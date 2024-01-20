@@ -7,12 +7,12 @@
 #include "stdarg.h"
 #include "string.h"
 
-#include "tinyTasksError.h"
-#include "tinyTasksConfig.h"
-#include "tinyTasksPort.h"
-#include "tinyTasks_debug.h"
-#include "tinyTasks_system.h"
-#include "tinyTasks_types.h"
+#include "tinyThreads_error.h"
+#include "tinyThreads_config.h"
+#include "tinyThreads_port.h"
+#include "tinyThreads_debug.h"
+#include "tinyThreads_system.h"
+#include "tinyThreads_types.h"
 
 /*************| Exception frame |********************
 These are the registers that are pushed onto the stack
@@ -43,7 +43,7 @@ xPSR - top of stack (highest address value)
 #define TINYTASKS_NUM_OF_SYS_TASKS 1
 #define TINYTASKS_MAX_TASKS (TINYTASKS_NUMBER_OF_TASKS+TINYTASKS_NUM_OF_SYS_TASKS)
 
-/***************| TintyTask control block member offset |***/
+/***************| TintyThread control block member offset |***/
 // This is to not use magic numbers in the assembly code
 #define TINYTASK_TCB_SP_OFFSET 0
 #define TINYTASK_TCB_NEXT_PTR_OFFSET 4
@@ -54,17 +54,17 @@ xPSR - top of stack (highest address value)
 #define TINYTASK_TCB_TASK_STATE_OFFSET 24
 
 /***************| system tick macros |**********************/
-extern uint32_t tinyTask_tick;
-#define tinyTask_tick_inc() ((tinyTasksTime_t)++tinyTask_tick)
-#define tinyTask_tick_reset() (tinyTask_tick = 0)
-#define tinyTask_tick_get() (tinyTask_tick)
+extern uint32_t tinyThread_tick;
+#define tinyThread_tick_inc() ((tinyThreadsTime_t)++tinyThread_tick)
+#define tinyThread_tick_reset() (tinyThread_tick = 0)
+#define tinyThread_tick_get() (tinyThread_tick)
 
-TinyTasksStatus tinyKernel_init(void);
-TinyTasksStatus tinyKernel_task_stack_init(uint32_t taskIDX);
-TinyTasksStatus tinyKernel_run(void);
-TinyTasksStatus tinyKernel_addTask(void (*task)(void), uint32_t period);
-tinyTasksTime_t tinyKernel_getTaskLastRunTime();
-void tinyTask_isr_system_task(void);
-// tinyTasksTime_t tinyTask_tick_get()
-// uint32_t tinyTask_tick_inc();
+TinyThreadsStatus tinyKernel_init(void);
+TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX);
+TinyThreadsStatus tinyKernel_run(void);
+TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period);
+tinyThreadsTime_t tinyKernel_getThreadLastRunTime();
+void tinyThread_isr_system_thread(void);
+// tinyThreadsTime_t tinyThread_tick_get()
+// uint32_t tinyThread_tick_inc();
 #endif // TINYKERNEL_H

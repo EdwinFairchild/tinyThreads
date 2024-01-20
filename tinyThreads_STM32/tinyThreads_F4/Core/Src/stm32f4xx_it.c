@@ -22,7 +22,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "tinyTasksPort.h"
+#include "tinyThreads_port.h"
 #include "tinyKernel.h"
 /* USER CODE END Includes */
 
@@ -176,7 +176,7 @@ void DebugMon_Handler(void)
 //   /* USER CODE BEGIN PendSV_IRQn 0 */
 //   //clear pendsv interrupt
 //   SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
-//   tinyTask_printMsg("PendSV\r\n");
+//   tinyThread_printMsg("PendSV\r\n");
 //   /* USER CODE END PendSV_IRQn 0 */
 //   /* USER CODE BEGIN PendSV_IRQn 1 */
 
@@ -189,7 +189,7 @@ void DebugMon_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-  tinyTask_isr_system_task();
+  tinyThread_isr_system_thread();
   /* USER CODE END SysTick_IRQn 0 */
 
   /* USER CODE BEGIN SysTick_IRQn 1 */

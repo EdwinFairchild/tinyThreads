@@ -1,8 +1,8 @@
 #include "tinyKernel.h"
-#include "tinyTasksPort.h"
+#include "tinyThreads_port.h"
 
 
-void tinyTask_port_enable_tick_timer(void){
+void tinyThread_port_enable_tick_timer(void){
     // TODO : use timer periph instead of systick
     //enable systick interrupt
     NVIC_SetPriority(SysTick_IRQn, 15);
@@ -11,8 +11,8 @@ void tinyTask_port_enable_tick_timer(void){
     SysTick_Config(SystemCoreClock / 1000);
 }
 
-void tinyTasks_enable_context_switching_isr(void){
-    //enable pendsv interrupt used for task switching
+void tinyThreads_enable_context_switching_isr(void){
+    //enable pendsv interrupt used for thread switching
     NVIC_SetPriority(PendSV_IRQn, 15);
     NVIC_EnableIRQ(PendSV_IRQn);
 }

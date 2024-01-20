@@ -7,6 +7,6 @@
 * and only the outermost critical section
 * should enable/disable interrupts
 *************************************************/
-void tinyTasks_sys_CsEnter(void);
-void tinyTasks_sys_CsExit(void);
+void tinyThreads_sys_CsEnter(void);
+void tinyThreads_sys_CsExit(void);
 #endif // TINYTASK_SYSTEM_H

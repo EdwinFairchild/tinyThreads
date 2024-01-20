@@ -1,8 +1,8 @@
 #ifndef TINYTASKS_DEBUG_H
 #define TINYTASKS_DEBUG_H
 
-#include "tinyTasksError.h"
-#include "tinyTasksConfig.h"
+#include "tinyThreads_error.h"
+#include "tinyThreads_config.h"
 
 // TODO: Makes the assumption user has retargeted printf to UART
 // Debug macro definition
