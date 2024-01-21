@@ -11,7 +11,7 @@ const char* errorToString(TinyThreadsStatus err) {
         case TINYTHREADS_INVALID_PRIORITY:  return "Invalid priority";
         case TINYTHREADS_OUT_OF_MEMORY:     return "Out of memory";
         case TINYTHREADS_TIMEOUT:           return "Timeout";
-        case TINYTHREADS_MAX_TASKS_REACHED: return "Max threads reached";
+        case TINYTHREADS_MAX_THREADS_REACHED: return "Max threads reached";
         // Add more cases as needed
         default:                          return "Unknown Error";
     }

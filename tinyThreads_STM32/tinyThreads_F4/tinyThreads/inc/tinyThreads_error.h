@@ -7,7 +7,7 @@
     TINYTHREADS_INVALID_PRIORITY = -2, // Invalid priority
     TINYTHREADS_OUT_OF_MEMORY    = -3,    // Out of memory
     TINYTHREADS_TIMEOUT = -4,          // Timeout
-    TINYTHREADS_MAX_TASKS_REACHED = -5, // Max threads reached
+    TINYTHREADS_MAX_THREADS_REACHED = -5, // Max threads reached
    
     // Add more error codes as needed
 }TinyThreadsStatus;

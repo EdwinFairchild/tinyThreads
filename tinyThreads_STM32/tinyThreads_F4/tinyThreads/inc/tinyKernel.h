@@ -20,16 +20,16 @@ when an exception occurs. The stack grows from high
 addresses to low addresses. The stack pointer points to
 the top of the stack. The exception frame is pushed onto
 the stack in the following order:
-R0 (lowest address value)
-R1
-R2
-R3
-R12
-LR (R14)
+xPSR - top of stack (highest address value) Top of stack
 PC (R15)
-xPSR - top of stack (highest address value)
+LR (R14)
+R12
+R3
+R2
+R1
+R0 (lowest address value)
 *******************************************************/
-#define TT_TOTAL_STACK_SIZE (TINYTHREADS_MAX_TASKS * TINYTHREADS_STACK_SIZE)
+#define TT_TOTAL_STACK_SIZE (TINYTHREADS_MAX_THREADS * TINYTHREADS_STACK_SIZE)
 #define TT_TOP_OF_STACK (TINYTHREADS_STACK_SIZE - 1U)
 #define TT_EXCEPTION_FRAME_PSR TT_TOP_OF_STACK
 #define TT_EXCEPTION_FRAME_PC (TT_TOP_OF_STACK - 1U)
@@ -41,7 +41,7 @@ xPSR - top of stack (highest address value)
 #define TT_EXCEPTION_FRAME_R0 (TT_TOP_OF_STACK - 7U)
 
 #define TINYTHREADS_NUM_OF_SYS_TASKS 1
-#define TINYTHREADS_MAX_TASKS (TINYTHREADS_NUMBER_OF_TASKS+TINYTHREADS_NUM_OF_SYS_TASKS)
+#define TINYTHREADS_MAX_THREADS (TINYTHREADS_NUMBER_OF_TASKS+TINYTHREADS_NUM_OF_SYS_TASKS)
 #define TINYTHREADS_SYSTEM_THREAD_COUNT 1
 /***************| TintyThread control block member offset |***/
 // This is to not use magic numbers in the assembly code
