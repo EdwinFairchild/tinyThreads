@@ -7,8 +7,10 @@
 
 //---------------------
 
-/* Reserve stack space */
-uint32_t tinyThread_stack[TINYTHREADS_MAX_TASKS][TINYTHREADS_STACK_SIZE];
+/* Reserve stack space, include user thread space and system thread space */
+// TODO : shoould I make a seprate system stack space ? If not , user musct know system will use some of
+// their stack , so do not calcualte stack on their threads alone. 
+uint32_t tinyThread_stack[TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT][TINYTHREADS_STACK_SIZE];
 
 /* Thread Control Block */
 typedef struct tinyThread_tcb  tinyThread_tcb_t;
@@ -25,7 +27,7 @@ typedef struct tinyThread_tcb{
 }tinyThread_tcb;
 
 /* Static allocation of Thread Control Block Array*/
-tinyThread_tcb_t tinyThread_thread_ctl[TINYTHREADS_MAX_TASKS];
+tinyThread_tcb_t tinyThread_thread_ctl[TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT];
 tinyThread_tcb *tinyThread_current_tcb = NULL;
 typedef uint32_t tinyThread_tcb_idx;
 tinyThread_tcb_idx tinyThreads_thread_Count = 0;
@@ -47,8 +49,8 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     // Add to account for system thread
-    if(tinyThreads_thread_Count >= TINYTHREADS_MAX_TASKS){
-        err = TINYTHREADS_MAX_TASKS_REACHED;
+    if(tinyThreads_thread_Count >= TINYTHREADS_MAX_THREADS){
+        err = TINYTHREADS_MAX_THREADS_REACHED;
     }
     tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
     tinyThread_thread_ctl[tinyThreads_thread_Count].next = NULL;
@@ -57,10 +59,23 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
         tinyThread_thread_ctl[tinyThreads_thread_Count - 1].next = &tinyThread_thread_ctl[tinyThreads_thread_Count];        
     }
     //if this is the last taks point the next pointer to the first thread
-    if(tinyThreads_thread_Count == (TINYTHREADS_MAX_TASKS - 1)){
+    if(tinyThreads_thread_Count == (TINYTHREADS_MAX_THREADS - 1)){
         tinyThread_thread_ctl[tinyThreads_thread_Count].next = &tinyThread_thread_ctl[0];
     }
 
+    return err;
+}
+
+/**************************************************************************
+ * Check if max num of threads have been added:
+ * return : TinyThreadsStatus  
+ **************************************************************************/
+static TinyThreadsStatus tinyThread_canAddThread(void){
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    if( ! (tinyThreads_thread_Count <= (TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT)) )
+    {
+        err = TINYTHREADS_MAX_THREADS_REACHED;
+    }
     return err;
 }
 
@@ -102,15 +117,15 @@ TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX){
     tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 16];
     tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
     
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 1] |= (1 << 24); // xPSR --------
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_PSR] |= (1 << 24); // xPSR --------
     /*  The PC get initialized in tinyKernel_addThread                               |
     tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 3] = 0xe2345678; // R14 (LR)    |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 4] = 0x12345678; // R12         |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 5] = 0x22345678; // R3          ---- Exception frame
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 6] = 0x32345678; // R2          |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 7] = 0x42345678; // R1          |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 8] = 0x52345678; // R0 ----------
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_LR] = 0xe2345678; // R14 (LR)    |
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R12] = 0x12345678; // R12         |
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R3] = 0x22345678; // R3          ---- Exception frame
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R2] = 0x32345678; // R2          |
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R1] = 0x42345678; // R1          |
+    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R0] = 0x52345678; // R0 ----------
 
     // R4-R11 are general purpose registers that are optional to save
     tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE -  9] = 0x62345678; // R11           
@@ -187,17 +202,17 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period){
     TinyThreadsStatus err = TINYTHREADS_OK;
     /* disable interrupts */
     __disable_irq();
-    if(tinyThreads_thread_Count <= (TINYTHREADS_MAX_TASKS - TINYTHREADS_SYSTEM_THREAD_COUNT) && thread != NULL){
+    if( tinyThread_canAddThread() == TINYTHREADS_OK && thread != NULL){
         tinyThread_tcb_ll_add(period);
         tinyKernel_thread_stack_init(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread
         // during context switch we will push the PC to the stack
         // and pop it off when we want to return to the thread at its proper place
-        tinyThread_stack[tinyThreads_thread_Count][TINYTHREADS_STACK_SIZE - 2] = (uint32_t)thread;
+        tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
         tinyThreads_thread_Count++;
     }
     else{
-        err = TINYTHREADS_MAX_TASKS_REACHED;
+        err = TINYTHREADS_MAX_THREADS_REACHED;
         
     }
     /* enable interrupts */
@@ -298,17 +313,12 @@ __attribute__((naked)) void PendSV_Handler(void)
 
 }
 
-static void systemThread(void){
+static void systemThread(void ){
     while(1){
-
+        printf(">>>>>>>>> System thread\r\n");
     }
 }
 
 tinyThreadsTime_t tinyKernel_getThreadLastRunTime(){
     return tinyThread_current_tcb->lastRunTime;
-}
-
-tinyThreadsTime_t tinyThread_canAddTask(void){
-    tinyThreadsTime_t err = TINYTHREADS_OK;
-    tinyThreads_thread_Count <= (TINYTHREADS_MAX_TASKS - TINYTHREADS_SYSTEM_THREAD_COUNT)
 }
