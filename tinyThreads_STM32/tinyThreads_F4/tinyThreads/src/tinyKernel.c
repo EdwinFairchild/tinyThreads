@@ -8,7 +8,7 @@
 //---------------------
 
 /* Reserve stack space */
-uint32_t tinyThread_stack[TINYTASKS_MAX_TASKS][TINYTASKS_STACK_SIZE];
+uint32_t tinyThread_stack[TINYTHREADS_MAX_TASKS][TINYTHREADS_STACK_SIZE];
 
 /* Thread Control Block */
 typedef struct tinyThread_tcb  tinyThread_tcb_t;
@@ -25,7 +25,7 @@ typedef struct tinyThread_tcb{
 }tinyThread_tcb;
 
 /* Static allocation of Thread Control Block Array*/
-tinyThread_tcb_t tinyThread_thread_ctl[TINYTASKS_MAX_TASKS];
+tinyThread_tcb_t tinyThread_thread_ctl[TINYTHREADS_MAX_TASKS];
 tinyThread_tcb *tinyThread_current_tcb = NULL;
 typedef uint32_t tinyThread_tcb_idx;
 tinyThread_tcb_idx tinyThreads_thread_Count = 0;
@@ -45,10 +45,10 @@ static void systemThread(void);
 ***************************************************************************/
 static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 {
-    TinyThreadsStatus err = TINYTASKS_OK;
+    TinyThreadsStatus err = TINYTHREADS_OK;
     // Add to account for system thread
-    if(tinyThreads_thread_Count >= TINYTASKS_MAX_TASKS){
-        err = TINYTASKS_MAX_TASKS_REACHED;
+    if(tinyThreads_thread_Count >= TINYTHREADS_MAX_TASKS){
+        err = TINYTHREADS_MAX_TASKS_REACHED;
     }
     tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
     tinyThread_thread_ctl[tinyThreads_thread_Count].next = NULL;
@@ -57,7 +57,7 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
         tinyThread_thread_ctl[tinyThreads_thread_Count - 1].next = &tinyThread_thread_ctl[tinyThreads_thread_Count];        
     }
     //if this is the last taks point the next pointer to the first thread
-    if(tinyThreads_thread_Count == (TINYTASKS_MAX_TASKS - 1)){
+    if(tinyThreads_thread_Count == (TINYTHREADS_MAX_TASKS - 1)){
         tinyThread_thread_ctl[tinyThreads_thread_Count].next = &tinyThread_thread_ctl[0];
     }
 
@@ -71,11 +71,11 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
  **************************************************************************/
 TinyThreadsStatus tinyKernel_init(void)
 {
-    TinyThreadsStatus err = TINYTASKS_OK;
+    TinyThreadsStatus err = TINYTHREADS_OK;
     // add system related threads
     err = tinyKernel_addThread(systemThread, 10);
     // os cannot function without system thread
-    if(err != TINYTASKS_OK){
+    if(err != TINYTHREADS_OK){
         return err;
     }
 
@@ -95,32 +95,32 @@ TinyThreadsStatus tinyKernel_init(void)
 * this is why we set the stack pointer to the last element of the stack 
 ***************************************************************************/
 TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX){
-    TinyThreadsStatus err = TINYTASKS_OK;
+    TinyThreadsStatus err = TINYTHREADS_OK;
     
     /*  initialize the stack pointer
         R13 is stack pointer, we manages the register manually using the stack pointer blow */
-    tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 16];
+    tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 16];
     tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
     
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 1] |= (1 << 24); // xPSR --------
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 1] |= (1 << 24); // xPSR --------
     /*  The PC get initialized in tinyKernel_addThread                               |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 3] = 0xe2345678; // R14 (LR)    |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 4] = 0x12345678; // R12         |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 5] = 0x22345678; // R3          ---- Exception frame
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 6] = 0x32345678; // R2          |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 7] = 0x42345678; // R1          |
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 8] = 0x52345678; // R0 ----------
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 3] = 0xe2345678; // R14 (LR)    |
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 4] = 0x12345678; // R12         |
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 5] = 0x22345678; // R3          ---- Exception frame
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 6] = 0x32345678; // R2          |
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 7] = 0x42345678; // R1          |
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 8] = 0x52345678; // R0 ----------
 
     // R4-R11 are general purpose registers that are optional to save
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE -  9] = 0x62345678; // R11           
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 10] = 0x72345678; // R10
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 11] = 0x82345678; // R9
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 12] = 0x92345678; // R8
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 13] = 0xa2345678; // R7
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 14] = 0xb2345678; // R6
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 15] = 0xc2345678; // R5
-    tinyThread_stack[threadIDX][TINYTASKS_STACK_SIZE - 16] = 0xd2345678; // R4
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE -  9] = 0x62345678; // R11           
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 10] = 0x72345678; // R10
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 11] = 0x82345678; // R9
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 12] = 0x92345678; // R8
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 13] = 0xa2345678; // R7
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 14] = 0xb2345678; // R6
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 15] = 0xc2345678; // R5
+    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 16] = 0xd2345678; // R4
     
     return err;
 }
@@ -131,7 +131,7 @@ TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX){
  * - Pop the exception frame from the stack and return to the thread
  **************************************************************************/
 TinyThreadsStatus tinyKernel_run(void){
-    TinyThreadsStatus err = TINYTASKS_OK;
+    TinyThreadsStatus err = TINYTHREADS_OK;
     // disable interrupts
     __disable_irq();
     /*  Load the address of tinyThread_current_tcb into R0 */
@@ -184,20 +184,20 @@ TinyThreadsStatus tinyKernel_run(void){
  * a pointer to a struct or literal number
  **************************************************************************/
 TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period){
-    TinyThreadsStatus err = TINYTASKS_OK;
+    TinyThreadsStatus err = TINYTHREADS_OK;
     /* disable interrupts */
     __disable_irq();
-    if(tinyThreads_thread_Count <= (TINYTASKS_MAX_TASKS -1) && thread != NULL){
+    if(tinyThreads_thread_Count <= (TINYTHREADS_MAX_TASKS - TINYTHREADS_SYSTEM_THREAD_COUNT) && thread != NULL){
         tinyThread_tcb_ll_add(period);
         tinyKernel_thread_stack_init(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread
         // during context switch we will push the PC to the stack
         // and pop it off when we want to return to the thread at its proper place
-        tinyThread_stack[tinyThreads_thread_Count][TINYTASKS_STACK_SIZE - 2] = (uint32_t)thread;
+        tinyThread_stack[tinyThreads_thread_Count][TINYTHREADS_STACK_SIZE - 2] = (uint32_t)thread;
         tinyThreads_thread_Count++;
     }
     else{
-        err = TINYTASKS_MAX_TASKS_REACHED;
+        err = TINYTHREADS_MAX_TASKS_REACHED;
         
     }
     /* enable interrupts */
@@ -306,4 +306,9 @@ static void systemThread(void){
 
 tinyThreadsTime_t tinyKernel_getThreadLastRunTime(){
     return tinyThread_current_tcb->lastRunTime;
+}
+
+tinyThreadsTime_t tinyThread_canAddTask(void){
+    tinyThreadsTime_t err = TINYTHREADS_OK;
+    tinyThreads_thread_Count <= (TINYTHREADS_MAX_TASKS - TINYTHREADS_SYSTEM_THREAD_COUNT)
 }

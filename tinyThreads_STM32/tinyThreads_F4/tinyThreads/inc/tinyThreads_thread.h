@@ -1,8 +1,8 @@
-#ifndef TINYTASKS_TASK_H
-#define TINYTASKS_TASK_H
+#ifndef TINYTHREADS_TASK_H
+#define TINYTHREADS_TASK_H
 
 #include "tinyThreads_types.h"
 
 tinyThreadsTime_t tinyThreads_getThreadLastRunTime(void);
 
-#endif // TINYTASKS_TASK_H
+#endif // TINYTHREADS_TASK_H

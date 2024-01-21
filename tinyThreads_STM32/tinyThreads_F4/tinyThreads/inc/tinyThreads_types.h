@@ -1,5 +1,5 @@
-#ifndef TINYTASKS_TYPES_H
-#define TINYTASKS_TYPES_H
+#ifndef TINYTHREADS_TYPES_H
+#define TINYTHREADS_TYPES_H
 
 #include "stdint.h"
 
@@ -14,4 +14,4 @@ typedef enum {
 } tinyThreadsState_t;
 
 
-#endif // TINYTASKS_TYPES_H
+#endif // TINYTHREADS_TYPES_H

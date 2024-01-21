@@ -1,5 +1,5 @@
-#ifndef TINYTASKSPORT_H
-#define TINYTASKSPORT_H
+#ifndef TINYTHREADSPORT_H
+#define TINYTHREADSPORT_H
 
 #define STM32F4
 
@@ -13,4 +13,4 @@ void tinyThreads_printMsg_init(void (*printMsgPtr)(char *msg, ...));
 void tinyThread_printMsg(char *msg, ...);
 
 
-#endif // TINYTASKSPORT_H
+#endif // TINYTHREADSPORT_H

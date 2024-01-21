@@ -29,8 +29,8 @@ LR (R14)
 PC (R15)
 xPSR - top of stack (highest address value)
 *******************************************************/
-#define TT_TOTAL_STACK_SIZE (TINYTASKS_MAX_TASKS * TINYTASKS_STACK_SIZE)
-#define TT_TOP_OF_STACK (TINYTASKS_STACK_SIZE - 1U)
+#define TT_TOTAL_STACK_SIZE (TINYTHREADS_MAX_TASKS * TINYTHREADS_STACK_SIZE)
+#define TT_TOP_OF_STACK (TINYTHREADS_STACK_SIZE - 1U)
 #define TT_EXCEPTION_FRAME_PSR TT_TOP_OF_STACK
 #define TT_EXCEPTION_FRAME_PC (TT_TOP_OF_STACK - 1U)
 #define TT_EXCEPTION_FRAME_LR (TT_TOP_OF_STACK - 2U)
@@ -40,9 +40,9 @@ xPSR - top of stack (highest address value)
 #define TT_EXCEPTION_FRAME_R1 (TT_TOP_OF_STACK - 6U)
 #define TT_EXCEPTION_FRAME_R0 (TT_TOP_OF_STACK - 7U)
 
-#define TINYTASKS_NUM_OF_SYS_TASKS 1
-#define TINYTASKS_MAX_TASKS (TINYTASKS_NUMBER_OF_TASKS+TINYTASKS_NUM_OF_SYS_TASKS)
-
+#define TINYTHREADS_NUM_OF_SYS_TASKS 1
+#define TINYTHREADS_MAX_TASKS (TINYTHREADS_NUMBER_OF_TASKS+TINYTHREADS_NUM_OF_SYS_TASKS)
+#define TINYTHREADS_SYSTEM_THREAD_COUNT 1
 /***************| TintyThread control block member offset |***/
 // This is to not use magic numbers in the assembly code
 #define TINYTASK_TCB_SP_OFFSET 0
