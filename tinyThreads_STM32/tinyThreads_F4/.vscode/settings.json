@@ -11,7 +11,8 @@
         "tinythreads_debug.h": "c",
         "tinykernel.h": "c",
         "tinythreads_config.h": "c",
-        "tinythreads_port.h": "c"
+        "tinythreads_port.h": "c",
+        "tinythreads_error.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

@@ -143,6 +143,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   //  add user threads
+  printf("Start of application\r\n");
   if(tinyKernel_init() == TINYTHREADS_OK){
   tinyKernel_addThread(thread1,2000);
   tinyKernel_addThread(thread2,3000);
