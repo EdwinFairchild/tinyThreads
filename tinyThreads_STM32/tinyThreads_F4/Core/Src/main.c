@@ -136,6 +136,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -156,8 +157,8 @@ int main(void)
   //  add user threads
   printf("Start of application\r\n");
   if(tinyKernel_init() == TINYTHREADS_OK){
-  tinyKernel_addThread(thread1,2000);
-  tinyKernel_addThread(thread2,3000);
+    tinyKernel_addThread(thread1,2000);
+    tinyKernel_addThread(thread2,3000);
     tinyKernel_addThread(thread3,1000);
     tinyKernel_run(); // should not return from this
   }else{
