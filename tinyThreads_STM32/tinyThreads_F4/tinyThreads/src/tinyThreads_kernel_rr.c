@@ -27,10 +27,12 @@ typedef struct tinyThread_tcb{
 }tinyThread_tcb;
 
 /* Static allocation of Thread Control Block Array*/
-tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
-tinyThread_tcb *tinyThread_current_tcb = NULL;
+static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
+static tinyThread_tcb *tinyThread_current_tcb = NULL;
+static tinyThread_tcb *tcb_ll_head = NULL;
+static tinyThread_tcb *tcb_ll_tail = NULL;
 typedef uint32_t tinyThread_tcb_idx;
-tinyThread_tcb_idx tinyThreads_thread_Count = 0;
+static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
 
 /***************| system tick |**********************/
@@ -45,23 +47,22 @@ static void systemThread(void);
 
 /**************************************************************************
 * Attempt to add a new thread to the linked list
+Can only get here through tinyKernel_addThread which veryfies tinyThread_canAddThread
 ***************************************************************************/
 static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     // Add to account for system thread
-    if(tinyThreads_thread_Count >= TT_MAX_THREADS){
-        err = TINYTHREADS_MAX_THREADS_REACHED;
-    }
     tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
-    tinyThread_thread_ctl[tinyThreads_thread_Count].next = NULL;
-    //if list is not empty simpy add the thread to next pointer of previous thread
-    if(tinyThreads_thread_Count !=0){
-        tinyThread_thread_ctl[tinyThreads_thread_Count - 1].next = &tinyThread_thread_ctl[tinyThreads_thread_Count];        
-    }
-    //if this is the last taks point the next pointer to the first thread
-    if(tinyThreads_thread_Count == (TT_MAX_THREADS - 1)){
-        tinyThread_thread_ctl[tinyThreads_thread_Count].next = &tinyThread_thread_ctl[0];
+    if(tcb_ll_head == NULL && tcb_ll_tail == NULL)
+    {
+        // this is first task (system task)
+        tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count]; 
+        tcb_ll_head = tcb_ll_tail;
+    }else{
+        tcb_ll_tail->next = &tinyThread_thread_ctl[tinyThreads_thread_Count]; 
+        tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count]; 
+        tcb_ll_tail->next = tcb_ll_head;
     }
 
     return err;
@@ -73,7 +74,7 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
  **************************************************************************/
 static TinyThreadsStatus tinyThread_canAddThread(void){
     TinyThreadsStatus err = TINYTHREADS_OK;
-    if( ! (tinyThreads_thread_Count <= (TT_MAX_THREADS + TT_SYSTEM_THREADS)) )
+    if( ! (tinyThreads_thread_Count <= (TT_MAX_THREADS)) )
     {
         err = TINYTHREADS_MAX_THREADS_REACHED;
     }
