@@ -1,7 +1,7 @@
 #include "tinyKernel.h"
 #include "tinyThreads_error.h"
 #include "tinyThreads_config.h"
-
+#include "tinyThreads_debug.h"
 // TODO: remove Debugging-----------
 
 
@@ -10,7 +10,7 @@
 /* Reserve stack space, include user thread space and system thread space */
 // TODO : shoould I make a seprate system stack space ? If not , user musct know system will use some of
 // their stack , so do not calcualte stack on their threads alone. 
-uint32_t tinyThread_stack[TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT][TINYTHREADS_STACK_SIZE];
+uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
 
 /* Thread Control Block */
 typedef struct tinyThread_tcb  tinyThread_tcb_t;
@@ -27,7 +27,7 @@ typedef struct tinyThread_tcb{
 }tinyThread_tcb;
 
 /* Static allocation of Thread Control Block Array*/
-tinyThread_tcb_t tinyThread_thread_ctl[TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT];
+tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
 tinyThread_tcb *tinyThread_current_tcb = NULL;
 typedef uint32_t tinyThread_tcb_idx;
 tinyThread_tcb_idx tinyThreads_thread_Count = 0;
@@ -36,6 +36,7 @@ tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 /***************| system tick |**********************/
 uint32_t tinyThread_tick = 0;
 
+/***************| function prototypes |**********************/
 static void systemThread(void);
 
 /**************************************************************************
@@ -49,7 +50,7 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     // Add to account for system thread
-    if(tinyThreads_thread_Count >= TINYTHREADS_MAX_THREADS){
+    if(tinyThreads_thread_Count >= TT_MAX_THREADS){
         err = TINYTHREADS_MAX_THREADS_REACHED;
     }
     tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
@@ -59,7 +60,7 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
         tinyThread_thread_ctl[tinyThreads_thread_Count - 1].next = &tinyThread_thread_ctl[tinyThreads_thread_Count];        
     }
     //if this is the last taks point the next pointer to the first thread
-    if(tinyThreads_thread_Count == (TINYTHREADS_MAX_THREADS - 1)){
+    if(tinyThreads_thread_Count == (TT_MAX_THREADS - 1)){
         tinyThread_thread_ctl[tinyThreads_thread_Count].next = &tinyThread_thread_ctl[0];
     }
 
@@ -72,7 +73,7 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
  **************************************************************************/
 static TinyThreadsStatus tinyThread_canAddThread(void){
     TinyThreadsStatus err = TINYTHREADS_OK;
-    if( ! (tinyThreads_thread_Count <= (TINYTHREADS_MAX_THREADS + TINYTHREADS_SYSTEM_THREAD_COUNT)) )
+    if( ! (tinyThreads_thread_Count <= (TT_MAX_THREADS + TT_SYSTEM_THREADS)) )
     {
         err = TINYTHREADS_MAX_THREADS_REACHED;
     }
@@ -114,12 +115,12 @@ TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX){
     
     /*  initialize the stack pointer
         R13 is stack pointer, we manages the register manually using the stack pointer blow */
-    tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 16];
+    tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 16];
     tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
     
     tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_PSR] |= (1 << 24); // xPSR --------
     /*  The PC get initialized in tinyKernel_addThread                               |
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
     tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_LR] = 0xe2345678; // R14 (LR)    |
     tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R12] = 0x12345678; // R12         |
     tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R3] = 0x22345678; // R3          ---- Exception frame
@@ -128,14 +129,14 @@ TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX){
     tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R0] = 0x52345678; // R0 ----------
 
     // R4-R11 are general purpose registers that are optional to save
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE -  9] = 0x62345678; // R11           
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 10] = 0x72345678; // R10
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 11] = 0x82345678; // R9
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 12] = 0x92345678; // R8
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 13] = 0xa2345678; // R7
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 14] = 0xb2345678; // R6
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 15] = 0xc2345678; // R5
-    tinyThread_stack[threadIDX][TINYTHREADS_STACK_SIZE - 16] = 0xd2345678; // R4
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE -  9] = 0x62345678; // R11           
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 10] = 0x72345678; // R10
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 11] = 0x82345678; // R9
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 12] = 0x92345678; // R8
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 13] = 0xa2345678; // R7
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 14] = 0xb2345678; // R6
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 15] = 0xc2345678; // R5
+    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 16] = 0xd2345678; // R4
     
     return err;
 }
@@ -259,7 +260,8 @@ __attribute__((naked)) void PendSV_Handler(void)
     __disable_irq();
     //clear pendsv interrupt
     SCB->ICSR |= SCB_ICSR_PENDSVCLR_Msk;
-    NVIC_EnableIRQ(PendSV_IRQn);
+    // this is defined to be an inline function so we are not altering the stack
+    NVIC_EnableIRQ(PendSV_IRQn); 
 
     /************************ Suspend and save current thread ************************/
     //save r4-r11 on the stack

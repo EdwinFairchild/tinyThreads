@@ -7,12 +7,20 @@
         "usart.h": "c",
         "stdbool.h": "c",
         "stdio.h": "c",
-        "tinythreadsconfig.h": "c",
-        "tinythreads_debug.h": "c",
+        "tinyThreads_debug.h": "c",
         "tinykernel.h": "c",
         "tinythreads_config.h": "c",
         "tinythreads_port.h": "c",
-        "tinythreads_error.h": "c"
+        "tinythreads_error.h": "c",
+        "stdarg.h": "c",
+        "bit": "c",
+        "deque": "c",
+        "list": "c",
+        "map": "c",
+        "*.tcc": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

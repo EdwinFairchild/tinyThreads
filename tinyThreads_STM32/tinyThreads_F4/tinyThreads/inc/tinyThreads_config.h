@@ -2,15 +2,15 @@
 #define TINYTHREADS_CONFIG_H
 
 #include <stdint.h>
-#define SYSTEM_CLCOCK_FREQ_MHZ 80
-#define TINYTHREADS_NUMBER_OF_TASKS  2
-#define TINYTHREADS_STACK_SIZE 1000
+#define CFG_SYSTEM_CLOCK 80
+#define CFG_TINYTHREADS_NUMBER_OF_THREADS  3
+#define CFG_TINYTHREADS_STACK_SIZE 1000
 
 /* ---------- Scheduling ----------*/
-#define TINYTASK_ROUND_ROBIN 1
+#define CFG_TINYTASK_ROUND_ROBIN 1
 
 /* ---------- Debugging ----------*/
-#define TINYTHREADS_DEBUG 1
+#define CFG_TINYTHREADS_DEBUG 1
 
 
 #endif // TINYTHREADS_CONFIG_H

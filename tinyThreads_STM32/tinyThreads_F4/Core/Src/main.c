@@ -110,6 +110,17 @@ void thread2(void){
     }
 }
 
+void thread3(void){
+    static uint32_t prev_runtime = 0;
+    while(1){
+    //elapsed time since last run
+    uint32_t currentTime = tinyThread_tick_get();
+    uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+    printf("Thread 3: %d\r\n", elapsed_time);
+    
+    }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -147,6 +158,7 @@ int main(void)
   if(tinyKernel_init() == TINYTHREADS_OK){
   tinyKernel_addThread(thread1,2000);
   tinyKernel_addThread(thread2,3000);
+    tinyKernel_addThread(thread3,1000);
     tinyKernel_run(); // should not return from this
   }else{
     printf("!!! Error initializing tinyKernel !!!\r\n");
