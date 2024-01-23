@@ -230,6 +230,7 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period){
 // TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c 
 void tinyThread_isr_system_thread(void)
 {
+    tinyThread_tick_inc();
     // check the thread control block to see if its time to switch it out (Round Robin)
     if(tinyThread_current_tcb->period_ms <= (tinyThread_tick_get() - tinyThread_current_tcb->lastRunTime))
     {
