@@ -70,7 +70,7 @@ extern uint32_t tinyThread_tick;
 TinyThreadsStatus tinyKernel_init(void);
 TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX);
 TinyThreadsStatus tinyKernel_run(void);
-TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period);
+TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority);
 tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime();
 void tinyThread_isr_system_thread(void);
 TinyThreadsStatus thread_sleep(uint32_t time_ms);

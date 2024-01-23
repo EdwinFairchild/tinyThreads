@@ -137,7 +137,7 @@ TinyThreadsStatus tinyKernel_init(void)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     // add system related threads
-    err = tinyKernel_addThread(systemThread, 10);
+    err = tinyKernel_addThread(systemThread, 10, 1);
     // os cannot function without system thread
     if (err != TINYTHREADS_OK)
     {
@@ -252,7 +252,7 @@ TinyThreadsStatus tinyKernel_run(void)
  *  accept a 32bit argument that can be used to pass messages in the form of
  * a pointer to a struct or literal number
  **************************************************************************/
-TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period)
+TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     /* disable interrupts */
