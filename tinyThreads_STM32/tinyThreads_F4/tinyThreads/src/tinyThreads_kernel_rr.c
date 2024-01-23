@@ -325,3 +325,12 @@ static void systemThread(void ){
 tinyThreadsTime_t tinyKernel_getThreadLastRunTime(){
     return tinyThread_current_tcb->lastRunTime;
 }
+ 
+TinyThreadsStatus thread_yeild(void){
+    // for context switch
+    // generate pendsv interrupt
+    // TODO : this should call something in tinyThreads_port.c
+    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
+
+}

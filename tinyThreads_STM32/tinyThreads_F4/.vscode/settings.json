@@ -20,7 +20,8 @@
         "*.tcc": "c",
         "string": "c",
         "unordered_map": "c",
-        "vector": "c"
+        "vector": "c",
+        "stm32f4xx.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

@@ -5,6 +5,7 @@
 
 #ifdef STM32F4
 #include "stm32f4xx.h"
+#include "core_cm4.h"
 #endif
 
 void tinyThread_port_enable_tick_timer(void);

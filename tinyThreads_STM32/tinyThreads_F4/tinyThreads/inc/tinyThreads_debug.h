@@ -3,6 +3,7 @@
 
 #include "tinyThreads_error.h"
 #include "tinyThreads_config.h"
+#include "tinyThreads_port.h"
 
 // TODO: Makes the assumption user has retargeted printf to UART
 // Debug macro definition
@@ -14,5 +15,7 @@
 #else
     #define debug(err) ((void)0)
 #endif
+
+__STATIC_FORCEINLINE void port_dbg_signal_1_high(void);
 
 #endif // CFG_TINYTHREADS_DEBUG_H

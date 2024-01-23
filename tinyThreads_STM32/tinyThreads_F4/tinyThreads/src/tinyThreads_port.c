@@ -1,5 +1,6 @@
 #include "tinyKernel.h"
 #include "tinyThreads_port.h"
+#include "tinyThreads_debug.h"
 
 
 void tinyThread_port_enable_tick_timer(void){
@@ -15,4 +16,13 @@ void tinyThreads_enable_context_switching_isr(void){
     //enable pendsv interrupt used for thread switching
     NVIC_SetPriority(PendSV_IRQn, 15);
     NVIC_EnableIRQ(PendSV_IRQn);
+}
+
+
+/**************| Debug pins |*********************************/
+__STATIC_FORCEINLINE void port_dbg_signal_1_assert(void){
+
+}
+__STATIC_FORCEINLINE void port_dbg_signal_1_deassert(void){
+    
 }
