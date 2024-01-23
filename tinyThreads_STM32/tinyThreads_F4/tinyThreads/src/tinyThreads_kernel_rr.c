@@ -56,12 +56,7 @@ Can only get here through tinyKernel_addThread which veryfies tinyThread_canAddT
 static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-    // Add to account for system thread
-    tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
-    tinyThread_thread_ctl[tinyThreads_thread_Count].priority = 0; // TODO :
-    tinyThread_thread_ctl[tinyThreads_thread_Count].state = THREAD_STATE_READY;
-    tinyThread_thread_ctl[tinyThreads_thread_Count].prev = NULL;
-    tinyThread_thread_ctl[tinyThreads_thread_Count].lastRunTime = (tinyThreadsTime_ms_t)0;
+
     if (tcb_ll_head == NULL && tcb_ll_tail == NULL)
     {
         // this is first task (system task)
@@ -259,6 +254,12 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_
     __disable_irq();
     if (tinyThread_canAddThread() == TINYTHREADS_OK && thread != NULL)
     {
+        // intiialize thread control block
+        tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].priority = priority;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].state = THREAD_STATE_READY;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].prev = NULL;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].lastRunTime = (tinyThreadsTime_ms_t)0;
         tinyThread_tcb_ll_add(period);
         tinyKernel_thread_stack_init(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread
