@@ -95,13 +95,15 @@ int _write(int file, char *data, int len)
 
 void thread1(void)
 {
+
     static uint32_t prev_runtime = 0;
     while (1)
     {
         // elapsed time since last run
         uint32_t currentTime = tinyThread_tick_get();
         uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
-        printf("Thread 1: %d\r\n", elapsed_time);
+        // printf("Thread 1: %d\r\n", elapsed_time);
+        printf("[1] T3SC: %d\r\n", getSleepCount(3));
     }
 }
 void thread2(void)
@@ -112,7 +114,8 @@ void thread2(void)
         // elapsed time since last run
         uint32_t currentTime = tinyThread_tick_get();
         uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
-        printf("Thread 2: %d\r\n", elapsed_time);
+        // printf("Thread 2: %d\r\n", elapsed_time);
+        printf("[2] T3SC: %d\r\n", getSleepCount(2));
     }
 }
 
@@ -126,10 +129,9 @@ void thread3(void)
         uint32_t currentTime = tinyThread_tick_get();
         uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
         printf("Thread 3: %d\r\n", elapsed_time);
-        if (count++ == 300)
-        {
-            thread_sleep(500);
-        }
+        // toggle led
+        HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+        thread_sleep(500);
     }
 }
 
@@ -169,9 +171,9 @@ int main(void)
     printf("Start of application\r\n");
     if (tinyKernel_init() == TINYTHREADS_OK)
     {
-        tinyKernel_addThread(thread1, 2000, 1);
-        tinyKernel_addThread(thread2, 3000, 1);
-        tinyKernel_addThread(thread3, 1000, 1);
+        tinyKernel_addThread(thread1, 10, 1);
+        tinyKernel_addThread(thread2, 10, 1);
+        tinyKernel_addThread(thread3, 10, 1);
         tinyKernel_run(); // should not return from this
     }
     else

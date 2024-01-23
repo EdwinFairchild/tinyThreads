@@ -2,6 +2,7 @@
 #define TINYTASK_SYSTEM_H
 // clang-format off
 #include "stdint.h"
+#include "tinyThreads_port.h"
 /*************************************************
  * Critical sections should be nested
  * and only the outermost critical section

@@ -74,6 +74,7 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_
 tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime();
 void tinyThread_isr_system_thread(void);
 TinyThreadsStatus thread_sleep(uint32_t time_ms);
+tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id);
 // tinyThreadsTime_t tinyThread_tick_get()
 // uint32_t tinyThread_tick_inc();
 #endif // TINYKERNEL_H
