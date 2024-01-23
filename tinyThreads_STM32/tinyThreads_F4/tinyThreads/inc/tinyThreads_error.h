@@ -1,6 +1,6 @@
 #ifndef TINYTHREADSERROR_H
 #define TINYTHREADSERROR_H
-
+// clang-format off
  typedef enum TinyThreadsStatus {
     TINYTHREADS_OK = 0,           // No error
     TINYTHREADS_INVALID_TASK     = -1,     // Invalid thread

@@ -1,6 +1,6 @@
 #ifndef CFG_TINYTHREADS_DEBUG_H
 #define CFG_TINYTHREADS_DEBUG_H
-
+// clang-format off
 #include "tinyThreads_error.h"
 #include "tinyThreads_config.h"
 #include "tinyThreads_port.h"

@@ -1,6 +1,6 @@
 #ifndef TINYTHREADSPORT_H
 #define TINYTHREADSPORT_H
-
+// clang-format off
 #define STM32F4
 
 #ifdef STM32F4

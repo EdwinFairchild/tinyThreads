@@ -1,19 +1,18 @@
 #ifndef TINYKERNEL_H
 #define TINYKERNEL_H
+// clang-format off
 
-#include "stdbool.h"
-#include "stdio.h"
-#include "stdint.h"
 #include "stdarg.h"
+#include "stdbool.h"
+#include "stdint.h"
+#include "stdio.h"
 #include "string.h"
 
+#include "tinyThreads_config.h"
 #include "tinyThreads_error.h"
-#include "tinyThreads_config.h"
 #include "tinyThreads_port.h"
-#include "tinyThreads_config.h"
 #include "tinyThreads_system.h"
 #include "tinyThreads_types.h"
-
 
 /******************************************************************************
 ************************| TintyThread thread count |***************************

@@ -1,6 +1,6 @@
 #ifndef TINYTHREADS_TYPES_H
 #define TINYTHREADS_TYPES_H
-
+// clang-format off
 #include "stdint.h"
 
 typedef uint32_t tinyThreadsTime_ms_t;

@@ -1,5 +1,6 @@
 #ifndef TINYTHREADS_CONFIG_H
 #define TINYTHREADS_CONFIG_H
+// clang-format off
 
 #include <stdint.h>
 #define CFG_SYSTEM_CLOCK 80

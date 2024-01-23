@@ -24,5 +24,11 @@
         "stm32f4xx.h": "c",
         "tinythreads_types.h": "c"
     },
-    "cortex-debug.variableUseNaturalFormat": false
+    "cortex-debug.variableUseNaturalFormat": false,
+    "clang-format.executable": "/usr/bin/clang-format",
+    "clang-format.style": "Microsoft",
+    "editor.formatOnSave": true,
+    "[c]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    }
 }
