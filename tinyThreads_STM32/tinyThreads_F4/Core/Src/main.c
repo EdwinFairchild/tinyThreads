@@ -112,12 +112,16 @@ void thread2(void){
 
 void thread3(void){
     static uint32_t prev_runtime = 0;
+    static uint32_t count = 0;
     while(1){
-    //elapsed time since last run
-    uint32_t currentTime = tinyThread_tick_get();
-    uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
-    printf("Thread 3: %d\r\n", elapsed_time);
-    
+      //elapsed time since last run
+      uint32_t currentTime = tinyThread_tick_get();
+      uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+      printf("Thread 3: %d\r\n", elapsed_time);
+      if(count++ == 300){
+        thread_sleep(500);
+      }
+  
     }
 }
 

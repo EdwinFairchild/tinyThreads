@@ -9,6 +9,7 @@ typedef uint32_t tinyThreadPriority_t;
 typedef enum {
     THREAD_STATE_READY, 
     THREAD_STATE_BLOCKED,
+    THREAD_STATE_SLEEPING,
     THREAD_STATE_PAUSED
 } tinyThreadsState_t;
 

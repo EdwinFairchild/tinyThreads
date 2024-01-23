@@ -21,7 +21,8 @@
         "string": "c",
         "unordered_map": "c",
         "vector": "c",
-        "stm32f4xx.h": "c"
+        "stm32f4xx.h": "c",
+        "tinythreads_types.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

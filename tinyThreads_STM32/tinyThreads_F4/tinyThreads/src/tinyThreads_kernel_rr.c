@@ -23,14 +23,19 @@ typedef struct tinyThread_tcb{
     tinyThreadsTime_ms_t lastRunTime;       // Last time the thread ran
     tinyThreadPriority_t priority;      // Priority of the thread
     tinyThreadsState_t state;         // State of the thread
+    tinyThreadsTime_ms_t sleep;
 
 }tinyThread_tcb;
 
 /* Static allocation of Thread Control Block Array*/
 static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
 static tinyThread_tcb *tinyThread_current_tcb = NULL;
+static tinyThread_tcb *tinyThread_next_tcb = NULL;
 static tinyThread_tcb *tcb_ll_head = NULL;
 static tinyThread_tcb *tcb_ll_tail = NULL;
+// list of threads that are paused/blocked/sleeping
+static tinyThread_tcb *tcb_non_ready_head = NULL;
+static tinyThread_tcb *tcb_non_ready_tail = NULL;
 typedef uint32_t tinyThread_tcb_idx;
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
@@ -82,6 +87,39 @@ static TinyThreadsStatus tinyThread_canAddThread(void){
     {
         err = TINYTHREADS_MAX_THREADS_REACHED;
     }
+    return err;
+}
+
+
+/**************************************************************************
+ * Add a tcb to the non ready list
+ * return : TinyThreadsStatus  
+ **************************************************************************/
+static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb *tcb){
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    if(tcb_non_ready_head == NULL && tcb_non_ready_tail == NULL)
+    {
+        // this is first thread being added to non ready list
+        tcb_non_ready_tail = tcb; 
+        tcb_non_ready_head = tcb_non_ready_tail;
+    }else{
+        tcb_non_ready_tail->next = tcb; 
+        tcb_non_ready_tail = tcb; 
+    }
+    return err;
+}
+
+/**************************************************************************
+ * remove a tcb from the non ready list
+ * return : TinyThreadsStatus  
+ **************************************************************************/
+static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb *tcb){
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    // handle removing tcb if its the head
+
+    // handle removing tcb if its the tail
+
+    // handle removing tcb if its in the middle
     return err;
 }
 
@@ -157,19 +195,22 @@ TinyThreadsStatus tinyKernel_run(void){
     __disable_irq();
     /*  Load the address of tinyThread_current_tcb into R0 */
     __asm("LDR r0, =tinyThread_current_tcb");
+
+
     /*  Dereference the address at R0 
         the first element of the tinyThread_tcb struct is the tak's stack pointer
         Now R1 will contain the address of the stack pointer for the current tinyThread_tcb
     */
     __asm("LDR r1, [r0]");
-    /*  Load the value at the address pointed to by R1 (stak's stack pointer)
+
+    /*  Load the value at the address pointed to by R1 (stack's stack pointer)
         into the stack pointer register */
     __asm("LDR sp, [r1]");
+
     /*  Pop the exception frame from the stack and return to the thread */
-    __asm("POP {r4-r11}");
-   
-    __asm("POP {r12}");
+    __asm("POP {r4-r12}");
     __asm("POP {r0-r3}");
+
     /*  skip LR in our stack by adding 4 the current SP */
     __asm("ADD sp, sp, 4");
     /*  Now we are at the PC in our stack, pop that into the LR 
@@ -228,18 +269,34 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period){
 }
 
 // TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c 
+/**************************************************************************
+ * System timer interrupt handler
+ * - Increment the system tick
+ * - Update threads in non ready state
+ * - Find next ready thread and go to it
+ * - Generate PendSV interrupt
+ **************************************************************************/
 void tinyThread_isr_system_thread(void)
 {
     tinyThread_tick_inc();
+    // update threads in non ready state
+
+    // this should be shecked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
     if(tinyThread_current_tcb->period_ms <= (tinyThread_tick_get() - tinyThread_current_tcb->lastRunTime))
     {
+        // travese the tcbs to find the next ready thread
+        tinyThread_next_tcb = tinyThread_current_tcb->next;
+        while(tinyThread_next_tcb->state != THREAD_STATE_READY)
+        {
+            
+            // we didnt break out of loop so keep looking for next ready thread
+            tinyThread_next_tcb = tinyThread_next_tcb->next;
+        }
         // generate pendsv interrupt
         SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
     }
-  
 }
-
 
     /* enter exception
         this will push the exception frame onto the stack
@@ -249,7 +306,6 @@ void tinyThread_isr_system_thread(void)
     */    
 __attribute__((naked)) void PendSV_Handler(void)
 {
-    
     // disble interrupts
     __disable_irq();
     //clear pendsv interrupt
@@ -258,8 +314,6 @@ __attribute__((naked)) void PendSV_Handler(void)
     NVIC_EnableIRQ(PendSV_IRQn); 
 
     /************************ Suspend and save current thread ************************/
-    //save r4-r11 on the stack
-    __asm("PUSH {r4-r11}");
     // load address of current tinyThread_tcb into r0
     __asm("LDR r0, =tinyThread_current_tcb");
     /*  derefrence the address at r0 (get the value at that address)
@@ -270,13 +324,27 @@ __attribute__((naked)) void PendSV_Handler(void)
     /*  save the current stack pointer register  
         into the address pointed to by r1 which is the stack pointer for the current tinyThread_tcb
     */
+
+    //save r4-r11 on the stack
+    __asm("PUSH {r4-r11}");
+
     __asm("STR sp, [r1]");
 
     /************************ Restore next thread ************************/
 
+     // Label 1
+    __asm("1:"); // continue switching into the next thread
+
     /*  Since R1 current holds the address of the stack pointer of the current tinyThread_tcb
         then 4 bytes above that address is the next pointer, add 4 to r1 and reload it into r1*/
-    __asm("LDR r1, [r1, %0]"::"I" (TINYTASK_TCB_NEXT_PTR_OFFSET));
+    // __asm("LDR r1, [r1, %0]"::"I" (TINYTASK_TCB_NEXT_PTR_OFFSET));
+    //load address of tinyThread_next_tcb into r1
+    __asm("LDR r1, =tinyThread_next_tcb");
+    /*  derefrence the address at r1 (get the value at that address)
+        the address found at the first element of the tinyThread_tcb struct is the stack pointer
+        now R1 will contain the address of the stack pointer for the next tinyThread_tcb
+    */
+    __asm("LDR r1, [r1]");
     /*  Since R1 now points to the next tinyThread_tcb and the first element of any tinyThread_tcb struct
         is the stack pointer for that given taks stack, now load the value at the address pointed to by r1 
         into the stack pointer register
@@ -325,5 +393,39 @@ TinyThreadsStatus thread_yeild(void){
     // TODO : this should call something in tinyThreads_port.c
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
+
+}
+
+TinyThreadsStatus thread_sleep(uint32_t time_ms){
+    // change thread state to paused
+    tinyThread_current_tcb->state = THREAD_STATE_PAUSED;
+}
+
+TinyThreadsStatus update_non_ready_threads(void){
+    // TODO traverse non ready threads and update them
+    // for sleeping threads decrement sleep counter
+    // for paused threads do nothing they will have a resume function user should call and that function should 
+    // change the state to ready
+    // for blocked threads do nothing those will be paused by semaphore/mutex and those will have unblock functions
+    // /* if task is asleep decrement the sleep counter and check if its time has expired*/
+    //         switch (tinyThread_next_tcb->state) {
+    //             case THREAD_STATE_SLEEPING:
+    //                 tinyThread_next_tcb->sleep--;
+    //                 if (tinyThread_next_tcb->sleep == 0) {
+    //                     tinyThread_next_tcb->state = THREAD_STATE_READY;
+    //                     break;
+    //                 }
+    //             case THREAD_STATE_PAUSED:
+    //                 // TODO : handle paused state
+    //                 break;
+    //             case THREAD_STATE_BLOCKED:
+    //                 // TODO : handle blocked state
+    //                 break;
+                
+    //                 // Fall through to default case if sleep is not zero
+    //             default:
+    //                 // Handle other cases here
+    //                 break;
+    //         }
 
 }
