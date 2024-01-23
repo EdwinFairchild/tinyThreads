@@ -20,7 +20,7 @@ typedef struct tinyThread_tcb{
     tinyThread_tcb_t *next;   // Pointer to the next thread
     tinyThread_tcb_t *prev;   // Pointer to the previous thread
     tinyThreadPeriod_t period_ms;        // Period of the thread
-    tinyThreadsTime_t lastRunTime;       // Last time the thread ran
+    tinyThreadsTime_ms_t lastRunTime;       // Last time the thread ran
     tinyThreadPriority_t priority;      // Priority of the thread
     tinyThreadsState_t state;         // State of the thread
 
@@ -36,7 +36,7 @@ static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
 
 /***************| system tick |**********************/
-uint32_t tinyThread_tick = 0;
+tinyThreadsTime_ms_t tinyThread_tick = 0;
 
 /***************| function prototypes |**********************/
 static void systemThread(void);
@@ -54,6 +54,10 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
     TinyThreadsStatus err = TINYTHREADS_OK;
     // Add to account for system thread
     tinyThread_thread_ctl[tinyThreads_thread_Count].period_ms = period;
+    tinyThread_thread_ctl[tinyThreads_thread_Count].priority = 0; // TODO :
+    tinyThread_thread_ctl[tinyThreads_thread_Count].state = THREAD_STATE_READY;
+    tinyThread_thread_ctl[tinyThreads_thread_Count].prev = NULL;
+    tinyThread_thread_ctl[tinyThreads_thread_Count].lastRunTime = (tinyThreadsTime_ms_t)0;
     if(tcb_ll_head == NULL && tcb_ll_tail == NULL)
     {
         // this is first task (system task)
@@ -226,25 +230,13 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period){
 // TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c 
 void tinyThread_isr_system_thread(void)
 {
-    // increment the system tick
-    tinyThreadsTime_t tick = tinyThread_tick_inc();
-
     // check the thread control block to see if its time to switch it out (Round Robin)
-    if(tinyThread_current_tcb->period_ms <= (tick - tinyThread_current_tcb->lastRunTime))
+    if(tinyThread_current_tcb->period_ms <= (tinyThread_tick_get() - tinyThread_current_tcb->lastRunTime))
     {
         // generate pendsv interrupt
         SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
     }
-    // // TODO : get period from current thread control block
-    // if(tick > 1000)
-    // {
-    //     // // only switch if current threads time has expired
-    //     // //printf("Thread Switch\r\n");
-    //     // tinyThread_tick_reset();
-    //     // generate pendsv interrupt
-    //     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-
-    // }
+  
 }
 
 
@@ -322,7 +314,7 @@ static void systemThread(void ){
     }
 }
 
-tinyThreadsTime_t tinyKernel_getThreadLastRunTime(){
+tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime(){
     return tinyThread_current_tcb->lastRunTime;
 }
  

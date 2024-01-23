@@ -3,6 +3,6 @@
 
 #include "tinyThreads_types.h"
 
-tinyThreadsTime_t tinyThreads_getThreadLastRunTime(void);
+tinyThreadsTime_ms_t tinyThreads_getThreadLastRunTime(void);
 
 #endif // TINYTHREADS_TASK_H

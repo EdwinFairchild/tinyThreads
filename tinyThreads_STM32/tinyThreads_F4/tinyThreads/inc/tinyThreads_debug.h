@@ -16,6 +16,7 @@
     #define debug(err) ((void)0)
 #endif
 
-__STATIC_FORCEINLINE void port_dbg_signal_1_high(void);
+__STATIC_FORCEINLINE void port_dbg_signal_1_assert(void);
+__STATIC_FORCEINLINE void port_dbg_signal_1_deassert(void);
 
 #endif // CFG_TINYTHREADS_DEBUG_H

@@ -64,7 +64,7 @@ R0 (lowest address value) */
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyThread_tick;
-#define tinyThread_tick_inc() ((tinyThreadsTime_t)++tinyThread_tick)
+#define tinyThread_tick_inc() (++tinyThread_tick)
 #define tinyThread_tick_reset() (tinyThread_tick = 0)
 #define tinyThread_tick_get() (tinyThread_tick)
 
@@ -72,7 +72,7 @@ TinyThreadsStatus tinyKernel_init(void);
 TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX);
 TinyThreadsStatus tinyKernel_run(void);
 TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), uint32_t period);
-tinyThreadsTime_t tinyKernel_getThreadLastRunTime();
+tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime();
 void tinyThread_isr_system_thread(void);
 // tinyThreadsTime_t tinyThread_tick_get()
 // uint32_t tinyThread_tick_inc();
