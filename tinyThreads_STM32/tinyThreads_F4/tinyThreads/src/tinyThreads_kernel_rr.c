@@ -389,9 +389,8 @@ tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime()
 
 TinyThreadsStatus thread_yeild(void)
 {
-    // for context switch
-    // generate pendsv interrupt
-    // TODO : this should call something in tinyThreads_port.c
+    // when yeilding we always want to go to the next thread
+    updateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
 static void updateNextThreadPtr(void)
@@ -400,7 +399,6 @@ static void updateNextThreadPtr(void)
     tinyThread_next_tcb = tinyThread_current_tcb->next;
     while (tinyThread_next_tcb->state != THREAD_STATE_READY)
     {
-
         // we didnt break out of loop so keep looking for next ready thread
         tinyThread_next_tcb = tinyThread_next_tcb->next;
     }
@@ -412,14 +410,13 @@ TinyThreadsStatus thread_sleep(uint32_t time_ms)
     // set sleep counter
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
-
-    updateNextThreadPtr();
     tinyThreads_sys_CsExit();
     thread_yeild();
 }
 
 static TinyThreadsStatus update_non_ready_threads(void)
 {
+    // TODO im iterating through this,  should i just have a linked list of non ready threads ?
     for (int i = 0; i < TT_MAX_THREADS; i++)
     {
         if (tinyThread_non_ready_thread_ctl[i] == NULL)
@@ -441,7 +438,7 @@ static TinyThreadsStatus update_non_ready_threads(void)
         }
     }
 }
-
+// TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id)
 {
     return tinyThread_non_ready_thread_ctl[id]->sleep_count_ms;
