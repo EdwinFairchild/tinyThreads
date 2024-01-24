@@ -25,6 +25,7 @@ static tinyThread_tcb *tcb_ll_tail = NULL;
 // make a list of suspended threads
 static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 
+// keep track of number of threads, also used as id
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
 /***************| system tick |**********************/
@@ -34,6 +35,7 @@ tinyThreadsTime_ms_t tinyThread_tick = 0;
 
 static TinyThreadsStatus update_non_ready_threads(void);
 static void updateNextThreadPtr(void);
+static bool tinyThread_isValidTcb(tinyThread_tcb_idx id);
 /**************************************************************************
  * linked list functions for : tcb linked list and non ready threads linked list
  ***************************************************************************/
@@ -103,43 +105,50 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
  **************************************************************************/
 static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_idx id)
 {
-    TinyThreadsStatus err = TINYTHREADS_OK;
+    TinyThreadsStatus err = TINYTHREADS_ERROR;
     // make new node
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
+    if (temp != NULL)
+    {
 
-    // check if this node is head and then remove and free
-    if (tinyThread_suspended_threads_list.head->tcb->id == id)
-    {
-        // save the head pointer
-        temp = tinyThread_suspended_threads_list.head;
-        // new head is the next node
-        tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
-        // free the old head
-        free(temp);
-    }
-    else if (tinyThread_suspended_threads_list.tail->tcb->id == id)
-    {
-        // save the tail pointer
-        temp = tinyThread_suspended_threads_list.tail;
-        // new tail is the prev node
-        tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.tail->prev;
-        // free the old tail
-        free(temp);
-    }
-    else
-    {
-        // find the node
-        temp = tinyThread_suspended_threads_list.head;
-        while (temp->tcb->id != id)
+        // check if this node is head and then remove and free
+        if (tinyThread_suspended_threads_list.head->tcb->id == id)
         {
-            temp = temp->next;
+            // save the head pointer
+            temp = tinyThread_suspended_threads_list.head;
+            // new head is the next node
+            tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
+            // free the old head
+            free(temp);
+            err = TINYTHREADS_OK;
         }
-        // remove the node
-        temp->prev->next = temp->next;
-        temp->next->prev = temp->prev;
-        free(temp);
+        else if (tinyThread_suspended_threads_list.tail->tcb->id == id)
+        {
+            // save the tail pointer
+            temp = tinyThread_suspended_threads_list.tail;
+            // new tail is the prev node
+            tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.tail->prev;
+            // free the old tail
+            free(temp);
+            err = TINYTHREADS_OK;
+        }
+        else
+        {
+            // find the node
+            temp = tinyThread_suspended_threads_list.head;
+            while (temp->tcb->id != id)
+            {
+                temp = temp->next;
+            }
+            // remove the node
+            temp->prev->next = temp->next;
+            temp->next->prev = temp->prev;
+            free(temp);
+            err = TINYTHREADS_OK;
+        }
     }
+
     return err;
 }
 
@@ -243,7 +252,7 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t perio
     debug(err);
     if (err != TINYTHREADS_OK)
     {
-        id = 0xFFFFFFFF;
+        id = err;
     }
     return id;
 }
@@ -404,15 +413,18 @@ static TinyThreadsStatus update_non_ready_threads(void)
 
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
 {
-    TinyThreadsStatus err = TINYTHREADS_OK;
-    tinyThreads_sys_CsEnter();
-    // set state to ready
-    tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
-    // set sleep time to 0
-    tinyThread_thread_ctl[id].sleep_count_ms = 0;
-    // remove from non ready list
-    tinyThread_non_ready_thread_remove_ll(id);
-    tinyThreads_sys_CsExit();
+    TinyThreadsStatus err = TINYTHREADS_ERROR;
+    if (tinyThread_isValidTcb(id))
+    {
+        tinyThreads_sys_CsEnter();
+        // set state to ready
+        tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
+        // set sleep time to 0
+        tinyThread_thread_ctl[id].sleep_count_ms = 0;
+        // remove from non ready list
+        err = tinyThread_non_ready_thread_remove_ll(id);
+        tinyThreads_sys_CsExit();
+    }
     return err;
 }
 // TODO: do i want to keep this? internal use?
@@ -425,4 +437,14 @@ tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
 {
     return tinyThread_current_tcb;
+}
+
+static bool tinyThread_isValidTcb(tinyThread_tcb_idx id)
+{
+    bool valid = false;
+    if (id < tinyThreads_thread_Count)
+    {
+        valid = true;
+    }
+    return valid;
 }

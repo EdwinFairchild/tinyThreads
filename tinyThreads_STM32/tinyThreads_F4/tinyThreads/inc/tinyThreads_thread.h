@@ -27,9 +27,9 @@ TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
 TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms);
 
 /**************************************************************************
- * TODO :
- * 
- * 
+ * tt_ThreadWake
+ * Use to wake a thread that is in sleeping via tt_ThreadSleep
+ *  returns TINYTHREADS_OK if successful
  **************************************************************************/
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id);
 
