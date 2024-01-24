@@ -54,7 +54,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static uint32_t count = 0;
 
 /* USER CODE END PV */
 
@@ -96,39 +95,39 @@ int _write(int file, char *data, int len)
 void thread1(void)
 {
 
-    static uint32_t prev_runtime = 0;
+    // static uint32_t prev_runtime = 0;
     while (1)
     {
         // elapsed time since last run
-        uint32_t currentTime = tinyThread_tick_get();
-        uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
-        // printf("Thread 1: %d\r\n", elapsed_time);
-        printf("[1] T3SC: %d\r\n", getSleepCount(3));
+        // uint32_t currentTime = tinyThread_tick_get();
+        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // printf("Thread 1: %d\r\n", (int)elapsed_time);
+        printf("[1] T3SC: %d\r\n", (int)getSleepCount(3));
     }
 }
 void thread2(void)
 {
-    static uint32_t prev_runtime = 0;
+    // static uint32_t prev_runtime = 0;
     while (1)
     {
         // elapsed time since last run
-        uint32_t currentTime = tinyThread_tick_get();
-        uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t currentTime = tinyThread_tick_get();
+        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
-        printf("[2] T3SC: %d\r\n", getSleepCount(2));
+        printf("[2] T3SC: %d\r\n", (int)getSleepCount(3));
     }
 }
 
 void thread3(void)
 {
-    static uint32_t prev_runtime = 0;
-    static uint32_t count = 0;
+    // static uint32_t prev_runtime = 0;
+    // static uint32_t count = 0;
     while (1)
     {
         // elapsed time since last run
-        uint32_t currentTime = tinyThread_tick_get();
-        uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
-        printf("Thread 3: %d\r\n", elapsed_time);
+        // uint32_t currentTime = tinyThread_tick_get();
+        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
         HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
         thread_sleep(500);
@@ -184,11 +183,11 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-
+    uint32_t count = 0;
     while (1)
     {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        printf("Error should not be here %d\r\n", count++);
+        printf("Error should not be here %d\r\n", (int)count++);
         HAL_Delay(500);
         /* USER CODE END WHILE */
 

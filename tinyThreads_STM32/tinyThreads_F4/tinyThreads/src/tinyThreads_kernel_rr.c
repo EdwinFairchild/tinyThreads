@@ -27,6 +27,23 @@ typedef struct tinyThread_tcb
     tinyThread_tcb_idx id;               // Unique thread identifier
 
 } tinyThread_tcb;
+/* Linkedlist for suspended threads */
+typedef struct tinyThread_suspended_threads_node
+{
+    tinyThread_tcb *tcb;
+    struct tinyThread_suspended_threads_node *next;
+    struct tinyThread_suspended_threads_node *prev;
+} tinyThread_suspended_threads_node_t;
+
+typedef struct
+{
+    tinyThread_suspended_threads_node_t *head;
+    tinyThread_suspended_threads_node_t *tail;
+
+} tinyThread_suspended_threads_list_t;
+
+// make a list of suspended threads
+static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 
 /* Static allocation of Thread Control Block Array*/
 // list of all thread control blocks
@@ -39,7 +56,6 @@ static tinyThread_tcb *tcb_ll_head = NULL;
 static tinyThread_tcb *tcb_ll_tail = NULL;
 
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
-static tinyThread_tcb_idx tinyThreads_non_ready_thread_Count = 0;
 
 /***************| system tick |**********************/
 tinyThreadsTime_ms_t tinyThread_tick = 0;
@@ -87,15 +103,29 @@ static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
 static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-    // save pointer to non ready thread control block
-    tinyThread_non_ready_thread_ctl[id] = tinyThread_current_tcb;
-    // update thread state
-    tinyThread_non_ready_thread_ctl[id]->state = THREAD_STATE_SLEEPING;
-    // tinyThread_current_tcb->state = THREAD_STATE_SLEEPING;
+
+    // make new node
+    tinyThread_suspended_threads_node_t *temp =
+        (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
+    temp->tcb = &tinyThread_thread_ctl[id];
+    temp->tcb->state = THREAD_STATE_SLEEPING;
+    temp->next = NULL;
+    temp->prev = NULL;
+    // check if head is null
+    if (tinyThread_suspended_threads_list.head == NULL)
+    {
+        tinyThread_suspended_threads_list.head = temp;
+        tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.head;
+    }
+    else
+    {
+        tinyThread_suspended_threads_list.tail->next = temp;
+        temp->prev = tinyThread_suspended_threads_list.tail;
+        tinyThread_suspended_threads_list.tail = temp;
+    }
 
     return err;
 }
-
 /**************************************************************************
  * Remove a tcb from the non ready list
  * This list only contains threads that are not ready to run
@@ -104,9 +134,42 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
 static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-    // save pointer to non ready thread control block
-    tinyThread_non_ready_thread_ctl[id] = NULL;
+    // make new node
+    tinyThread_suspended_threads_node_t *temp =
+        (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
 
+    // check if this node is head and then remove and free
+    if (tinyThread_suspended_threads_list.head->tcb->id == id)
+    {
+        // save the head pointer
+        temp = tinyThread_suspended_threads_list.head;
+        // new head is the next node
+        tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
+        // free the old head
+        free(temp);
+    }
+    else if (tinyThread_suspended_threads_list.tail->tcb->id == id)
+    {
+        // save the tail pointer
+        temp = tinyThread_suspended_threads_list.tail;
+        // new tail is the prev node
+        tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.tail->prev;
+        // free the old tail
+        free(temp);
+    }
+    else
+    {
+        // find the node
+        temp = tinyThread_suspended_threads_list.head;
+        while (temp->tcb->id != id)
+        {
+            temp = temp->next;
+        }
+        // remove the node
+        temp->prev->next = temp->next;
+        temp->next->prev = temp->prev;
+        free(temp);
+    }
     return err;
 }
 
@@ -264,8 +327,8 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_
         tinyThread_thread_ctl[tinyThreads_thread_Count].id = tinyThreads_thread_Count;
         tinyThread_tcb_ll_add(period);
         tinyKernel_thread_stack_init(tinyThreads_thread_Count);
-        // initialize PC , initial program counter just points to the thread
-        // during context switch we will push the PC to the stack
+        // initialize PC , initial program counter just points to the thread.
+        // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
         tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
         tinyThreads_thread_Count++;
@@ -387,8 +450,9 @@ tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime()
     return tinyThread_current_tcb->lastRunTime;
 }
 
-TinyThreadsStatus thread_yeild(void)
+void thread_yeild(void)
 {
+
     // when yeilding we always want to go to the next thread
     updateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
@@ -406,37 +470,41 @@ static void updateNextThreadPtr(void)
 
 TinyThreadsStatus thread_sleep(uint32_t time_ms)
 {
+    TinyThreadsStatus err = TINYTHREADS_OK;
     tinyThreads_sys_CsEnter();
     // set sleep counter
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
     tinyThreads_sys_CsExit();
     thread_yeild();
+    return err;
 }
 
 static TinyThreadsStatus update_non_ready_threads(void)
 {
-    // TODO im iterating through this,  should i just have a linked list of non ready threads ?
-    for (int i = 0; i < TT_MAX_THREADS; i++)
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    // travese the non ready threads list and update the sleep counter
+    tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
+    while (temp != NULL)
     {
-        if (tinyThread_non_ready_thread_ctl[i] == NULL)
+        if (temp->tcb->state == THREAD_STATE_SLEEPING)
         {
-            continue;
-        }
-        if (tinyThread_non_ready_thread_ctl[i]->state != THREAD_STATE_SLEEPING)
-        {
-            continue;
-        }
-        tinyThread_non_ready_thread_ctl[i]->sleep_count_ms--;
 
-        if (tinyThread_non_ready_thread_ctl[i]->sleep_count_ms == 0)
-        {
-            // add to ready list
-            tinyThread_non_ready_thread_ctl[i]->state = THREAD_STATE_READY;
-            // remove from non ready list
-            tinyThread_non_ready_thread_remove_ll(i);
+            if (temp->tcb->sleep_count_ms > 0)
+            {
+                temp->tcb->sleep_count_ms--;
+            }
+            else
+            {
+                // set state to ready
+                temp->tcb->state = THREAD_STATE_READY;
+                // remove from non ready list
+                tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
+            }
         }
+        temp = temp->next;
     }
+    return err; // TODO : error check
 }
 // TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id)
