@@ -8,6 +8,6 @@ TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period
 TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
 TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms);
 tinyThreadsTime_ms_t tt_ThreadGetLastRunTime();
-tinyThread_tcb *tt_ThreadGetCurrentTcb(void);
 tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id);
+tinyThread_tcb *tt_ThreadGetCurrentTcb(void);
 #endif // TINYTHREADS_TASK_H
