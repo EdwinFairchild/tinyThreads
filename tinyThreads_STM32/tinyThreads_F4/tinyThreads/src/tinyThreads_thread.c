@@ -208,10 +208,12 @@ TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
  *  accept a 32bit argument that can be used to pass messages in the form of
  * a pointer to a struct or literal number
  **************************************************************************/
-TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
 {
 
     TinyThreadsStatus err = TINYTHREADS_OK;
+    // var to store id of thread
+    tinyThread_tcb_idx id = 0;
     /* disable interrupts */
     __disable_irq();
     if (tinyThread_canAddThread() == TINYTHREADS_OK && thread != NULL)
@@ -229,6 +231,7 @@ TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period
         // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
         tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
+        id = tinyThreads_thread_Count;
         tinyThreads_thread_Count++;
     }
     else
@@ -238,7 +241,11 @@ TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period
     /* enable interrupts */
     __enable_irq();
     debug(err);
-    return err;
+    if (err != TINYTHREADS_OK)
+    {
+        id = 0xFFFFFFFF;
+    }
+    return id;
 }
 
 // TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c
@@ -339,9 +346,8 @@ tinyThreadsTime_ms_t tt_ThreadGetLastRunTime()
     return tinyThread_current_tcb->lastRunTime;
 }
 
-void thread_yeild(void)
+void tt_ThreadYield(void)
 {
-
     // when yeilding we always want to go to the next thread
     updateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
@@ -365,7 +371,7 @@ TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
     tinyThreads_sys_CsExit();
-    thread_yeild();
+    tt_ThreadYield();
     return err;
 }
 
@@ -395,10 +401,25 @@ static TinyThreadsStatus update_non_ready_threads(void)
     }
     return err; // TODO : error check
 }
+
+TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
+{
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    tinyThreads_sys_CsEnter();
+    // set state to ready
+    tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
+    // set sleep time to 0
+    tinyThread_thread_ctl[id].sleep_count_ms = 0;
+    // remove from non ready list
+    tinyThread_non_ready_thread_remove_ll(id);
+    tinyThreads_sys_CsExit();
+    return err;
+}
 // TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 {
-    return tinyThread_non_ready_thread_ctl[id]->sleep_count_ms;
+    // TODO: implement
+    return (tinyThreadsTime_ms_t)42;
 }
 
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void)

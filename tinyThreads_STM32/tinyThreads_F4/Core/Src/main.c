@@ -168,11 +168,17 @@ int main(void)
     /* USER CODE BEGIN 2 */
     //  add user threads
     printf("Start of application\r\n");
+    tinyThread_tcb_idx thread1_id, thread2_id, thread3_id;
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        tt_ThreadAdd(thread1, 10, 1);
-        tt_ThreadAdd(thread2, 10, 1);
-        tt_ThreadAdd(thread3, 10, 1);
+        thread1_id = tt_ThreadAdd(thread1, 10, 1);
+        thread2_id = tt_ThreadAdd(thread2, 10, 1);
+        thread3_id = tt_ThreadAdd(thread3, 10, 1);
+        if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||
+            thread3_id == TINYTHREADS_MAX_THREADS_REACHED)
+        {
+            printf("!!! Error adding threads !!!\r\n");
+        }
         tt_CoreRun(); // should not return from this
     }
     else
