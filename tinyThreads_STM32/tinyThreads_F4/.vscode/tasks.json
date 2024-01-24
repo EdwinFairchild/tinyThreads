@@ -5,7 +5,6 @@
             "label": "build",
             "type": "shell",
             "command": "make -j"
-
         },
         {
             "label": "clean",
@@ -16,21 +15,33 @@
             "label": "flash",
             "type": "shell",
             "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyThreads_F4.elf verify reset exit'",
-            "dependsOn": ["clean" , "build"],
+            "dependsOn": [
+                "clean",
+                "build"
+            ],
             "dependsOrder": "sequence"
         },
         {
             "label": "mass erase",
             "type": "shell",
             "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'init; reset halt; stm32f4x mass_erase 0; exit'"
-            
         },
         {
             "label": "wipe & flash",
             "type": "shell",
             "command": "openocd -f interface/stlink.cfg -f target/stm32f4x.cfg -c 'program build/tinyThreads_F4.elf verify reset exit'",
-            "dependsOn": ["clean" , "mass erase", "build"],
+            "dependsOn": [
+                "clean",
+                "mass erase",
+                "build"
+            ],
             "dependsOrder": "sequence"
+        },
+        {
+            "label": "Display message",
+            "type": "shell",
+            "command": "echo 'Erase complete'",
+            "problemMatcher": {}
         }
     ]
 }
