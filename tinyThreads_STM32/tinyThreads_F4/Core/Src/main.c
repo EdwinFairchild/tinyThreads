@@ -115,7 +115,8 @@ void thread2(void)
         uint32_t currentTime = tinyThread_tick_get();
         uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
-        printf("[2] T3SC: %d\r\n", getSleepCount(2));
+        printf("[2] T3SC: %d\r\n", getSleepCount(3));
+        thread_sleep(5000);
     }
 }
 
