@@ -29,7 +29,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
-#include "tinyKernel.h"
+#include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
 #include "tinyThreads_thread.h"
 #include "tinyThreads_types.h"
@@ -100,9 +100,9 @@ void thread1(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 1: %d\r\n", (int)elapsed_time);
-        printf("[1] T3SC: %d\r\n", (int)getSleepCount(3));
+        printf("[1] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
 }
 void thread2(void)
@@ -112,9 +112,9 @@ void thread2(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
-        printf("[2] T3SC: %d\r\n", (int)getSleepCount(3));
+        printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
 }
 
@@ -126,11 +126,11 @@ void thread3(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
         HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-        thread_sleep(500);
+        tt_ThreadSleep(500);
     }
 }
 
@@ -168,12 +168,12 @@ int main(void)
     /* USER CODE BEGIN 2 */
     //  add user threads
     printf("Start of application\r\n");
-    if (tinyKernel_init() == TINYTHREADS_OK)
+    if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        tinyKernel_addThread(thread1, 10, 1);
-        tinyKernel_addThread(thread2, 10, 1);
-        tinyKernel_addThread(thread3, 10, 1);
-        tinyKernel_run(); // should not return from this
+        tt_ThreadAdd(thread1, 10, 1);
+        tt_ThreadAdd(thread2, 10, 1);
+        tt_ThreadAdd(thread3, 10, 1);
+        tt_CoreRun(); // should not return from this
     }
     else
     {

@@ -13,6 +13,7 @@
 #include "tinyThreads_port.h"
 #include "tinyThreads_system.h"
 #include "tinyThreads_types.h"
+#include "tinyThreads_thread.h"
 
 #include "stdlib.h"
 
@@ -65,18 +66,14 @@ R0 (lowest address value) */
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyThread_tick;
-#define tinyThread_tick_inc() (++tinyThread_tick)
+#define tt_tick_inc() (++tinyThread_tick)
 #define tinyThread_tick_reset() (tinyThread_tick = 0)
 #define tinyThread_tick_get() (tinyThread_tick)
 
-TinyThreadsStatus tinyKernel_init(void);
-TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX);
-TinyThreadsStatus tinyKernel_run(void);
-TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority);
-tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime();
+TinyThreadsStatus tt_CoreInit(void);
+TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
+TinyThreadsStatus tt_CoreRun(void);
+
 void tinyThread_isr_system_thread(void);
-TinyThreadsStatus thread_sleep(uint32_t time_ms);
-tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id);
-// tinyThreadsTime_t tinyThread_tick_get()
-// uint32_t tinyThread_tick_inc();
+
 #endif // TINYKERNEL_H
