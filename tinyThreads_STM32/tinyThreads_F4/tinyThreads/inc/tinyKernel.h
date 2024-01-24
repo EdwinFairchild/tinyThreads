@@ -14,6 +14,8 @@
 #include "tinyThreads_system.h"
 #include "tinyThreads_types.h"
 
+#include "stdlib.h"
+
 /******************************************************************************
 ************************| TintyThread thread count |***************************
 ******************************************************************************/
@@ -21,7 +23,7 @@
 #define TT_MAX_THREADS (CFG_TINYTHREADS_NUMBER_OF_THREADS + TT_SYSTEM_THREADS)
 /***************************************************************************
 **************| Exception frame |*******************************************
-/***************************************************************************
+****************************************************************************
 These are the registers that are pushed onto the stack
 when an exception occurs. The stack grows from high
 addresses to low addresses. The stack pointer points to

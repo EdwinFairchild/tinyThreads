@@ -18,11 +18,3 @@ void tinyThreads_enable_context_switching_isr(void)
     NVIC_SetPriority(PendSV_IRQn, 15);
     NVIC_EnableIRQ(PendSV_IRQn);
 }
-
-/**************| Debug pins |*********************************/
-__STATIC_FORCEINLINE void port_dbg_signal_1_assert(void)
-{
-}
-__STATIC_FORCEINLINE void port_dbg_signal_1_deassert(void)
-{
-}

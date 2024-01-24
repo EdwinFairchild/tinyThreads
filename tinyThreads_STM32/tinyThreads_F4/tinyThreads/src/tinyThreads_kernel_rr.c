@@ -56,7 +56,6 @@ static tinyThread_tcb *tcb_ll_head = NULL;
 static tinyThread_tcb *tcb_ll_tail = NULL;
 
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
-static tinyThread_tcb_idx tinyThreads_non_ready_thread_Count = 0;
 
 /***************| system tick |**********************/
 tinyThreadsTime_ms_t tinyThread_tick = 0;
@@ -328,8 +327,8 @@ TinyThreadsStatus tinyKernel_addThread(void (*thread)(void), tinyThreadsTime_ms_
         tinyThread_thread_ctl[tinyThreads_thread_Count].id = tinyThreads_thread_Count;
         tinyThread_tcb_ll_add(period);
         tinyKernel_thread_stack_init(tinyThreads_thread_Count);
-        // initialize PC , initial program counter just points to the thread
-        // during context switch we will push the PC to the stack
+        // initialize PC , initial program counter just points to the thread.
+        // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
         tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
         tinyThreads_thread_Count++;
@@ -451,8 +450,9 @@ tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime()
     return tinyThread_current_tcb->lastRunTime;
 }
 
-TinyThreadsStatus thread_yeild(void)
+void thread_yeild(void)
 {
+
     // when yeilding we always want to go to the next thread
     updateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
@@ -470,16 +470,19 @@ static void updateNextThreadPtr(void)
 
 TinyThreadsStatus thread_sleep(uint32_t time_ms)
 {
+    TinyThreadsStatus err = TINYTHREADS_OK;
     tinyThreads_sys_CsEnter();
     // set sleep counter
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
     tinyThreads_sys_CsExit();
     thread_yeild();
+    return err;
 }
 
 static TinyThreadsStatus update_non_ready_threads(void)
 {
+    TinyThreadsStatus err = TINYTHREADS_OK;
     // travese the non ready threads list and update the sleep counter
     tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
     while (temp != NULL)
@@ -501,6 +504,7 @@ static TinyThreadsStatus update_non_ready_threads(void)
         }
         temp = temp->next;
     }
+    return err; // TODO : error check
 }
 // TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id)
