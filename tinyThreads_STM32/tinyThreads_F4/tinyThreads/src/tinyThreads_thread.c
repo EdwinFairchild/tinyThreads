@@ -12,37 +12,6 @@
 // their stack , so do not calcualte stack on their threads alone.
 uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
 
-/* Thread Control Block */
-typedef struct tinyThread_tcb tinyThread_tcb_t;
-
-typedef struct tinyThread_tcb
-{
-    uint32_t *stackPointer;              // Pointer to the current stack pointer
-    tinyThread_tcb_t *next;              // Pointer to the next thread
-    tinyThread_tcb_t *prev;              // Pointer to the previous thread
-    tinyThreadPeriod_t period_ms;        // Period of the thread
-    tinyThreadsTime_ms_t lastRunTime;    // Last time the thread ran
-    tinyThreadPriority_t priority;       // Priority of the thread
-    tinyThreadsState_t state;            // State of the thread
-    tinyThreadsTime_ms_t sleep_count_ms; // sleep count in ms
-    tinyThread_tcb_idx id;               // Unique thread identifier
-
-} tinyThread_tcb;
-/* Linkedlist for suspended threads */
-typedef struct tinyThread_suspended_threads_node
-{
-    tinyThread_tcb *tcb;
-    struct tinyThread_suspended_threads_node *next;
-    struct tinyThread_suspended_threads_node *prev;
-} tinyThread_suspended_threads_node_t;
-
-typedef struct
-{
-    tinyThread_suspended_threads_node_t *head;
-    tinyThread_suspended_threads_node_t *tail;
-
-} tinyThread_suspended_threads_list_t;
-
 // make a list of suspended threads
 static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 
@@ -194,7 +163,7 @@ static TinyThreadsStatus tinyThread_canAddThread(void)
  * stacks are in decending order
  * this is why we set the stack pointer to the last element of the stack
  ***************************************************************************/
-TinyThreadsStatus tinyKernel_thread_stack_init(uint32_t threadIDX)
+TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
 
@@ -255,7 +224,7 @@ TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period
         tinyThread_thread_ctl[tinyThreads_thread_Count].lastRunTime = (tinyThreadsTime_ms_t)0;
         tinyThread_thread_ctl[tinyThreads_thread_Count].id = tinyThreads_thread_Count;
         tinyThread_tcb_ll_add(period);
-        tinyKernel_thread_stack_init(tinyThreads_thread_Count);
+        tt_ThreadStackInit(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread.
         // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
@@ -282,7 +251,7 @@ TinyThreadsStatus tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period
  **************************************************************************/
 void tinyThread_isr_system_thread(void)
 {
-    tinyThread_tick_inc();
+    tt_tick_inc();
     // update threads in non ready state
     update_non_ready_threads();
 
@@ -365,7 +334,7 @@ __attribute__((naked)) void PendSV_Handler(void)
     __asm("BX LR");
 }
 
-tinyThreadsTime_ms_t tinyKernel_getThreadLastRunTime()
+tinyThreadsTime_ms_t tt_ThreadGetLastRunTime()
 {
     return tinyThread_current_tcb->lastRunTime;
 }
@@ -427,16 +396,12 @@ static TinyThreadsStatus update_non_ready_threads(void)
     return err; // TODO : error check
 }
 // TODO: do i want to keep this? internal use?
-tinyThreadsTime_ms_t getSleepCount(tinyThread_tcb_idx id)
+tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 {
     return tinyThread_non_ready_thread_ctl[id]->sleep_count_ms;
 }
-tinyThreadsTime_ms_t tinyThreads_getThreadLastRunTime(void)
-{
-    return tinyKernel_getThreadLastRunTime();
-}
 
-uint32_t *tinyThread_getCurrentTcb(void)
+tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
 {
-    return (uint32_t *)tinyThread_current_tcb;
+    return tinyThread_current_tcb;
 }

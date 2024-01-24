@@ -1,7 +1,7 @@
 #include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
 
-uint32_t *current_tcb = NULL;
+tinyThread_tcb *current_tcb = NULL;
 static void systemThread(void)
 {
     static volatile uint32_t threadCount = 0;
@@ -33,7 +33,7 @@ TinyThreadsStatus tt_CoreInit(void)
 TinyThreadsStatus tt_CoreRun(void)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-    current_tcb = (uint32_t *)tinyThread_getCurrentTcb();
+    current_tcb = tt_ThreadGetCurrentTcb();
 
     tinyThread_port_enable_tick_timer();
     tinyThreads_enable_context_switching_isr();

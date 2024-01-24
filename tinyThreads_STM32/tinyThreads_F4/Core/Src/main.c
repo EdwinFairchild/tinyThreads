@@ -100,9 +100,9 @@ void thread1(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 1: %d\r\n", (int)elapsed_time);
-        printf("[1] T3SC: %d\r\n", (int)getSleepCount(3));
+        printf("[1] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
 }
 void thread2(void)
@@ -112,9 +112,9 @@ void thread2(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
-        printf("[2] T3SC: %d\r\n", (int)getSleepCount(3));
+        printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
 }
 
@@ -126,7 +126,7 @@ void thread3(void)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tinyKernel_getThreadLastRunTime();
+        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
         HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
