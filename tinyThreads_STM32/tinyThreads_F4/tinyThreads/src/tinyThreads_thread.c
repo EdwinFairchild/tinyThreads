@@ -12,18 +12,18 @@
 // their stack , so do not calcualte stack on their threads alone.
 uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
 
-// make a list of suspended threads
-static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
-
 /* Static allocation of Thread Control Block Array*/
 // list of all thread control blocks
 static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
+// used to keep track of current tcb
 tinyThread_tcb *tinyThread_current_tcb = &tinyThread_thread_ctl[0];
+// used to keep track of next tcb
 static tinyThread_tcb *tinyThread_next_tcb = NULL;
-// list of threads that are not ready to run
-static tinyThread_tcb_t *tinyThread_non_ready_thread_ctl[TT_MAX_THREADS];
 static tinyThread_tcb *tcb_ll_head = NULL;
 static tinyThread_tcb *tcb_ll_tail = NULL;
+
+// make a list of suspended threads
+static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 

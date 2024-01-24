@@ -28,8 +28,8 @@ typedef struct tinyThread_tcb
     tinyThreadsState_t state;            // State of the thread
     tinyThreadsTime_ms_t sleep_count_ms; // sleep count in ms
     tinyThread_tcb_idx id;               // Unique thread identifier
-
 } tinyThread_tcb;
+
 /* Linkedlist for suspended threads */
 typedef struct tinyThread_suspended_threads_node
 {

@@ -29,10 +29,18 @@
         "tinythreads_core.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
-    "clang-format.executable": "/usr/bin/clang-format",
     "clang-format.style": "Microsoft",
     "editor.formatOnSave": true,
     "[c]": {
         "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "linux": {
+        "clang-format.executable": "/usr/bin/clang-format"
+    },
+    "osx": {
+        "clang-format.executable": "<your macOS clang-format path>"
+    },
+    "windows": {
+        "clang-format.executable": "< Windows clang-format path>"
     }
 }
