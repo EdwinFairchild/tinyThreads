@@ -2,6 +2,7 @@
 #define TINYTHREADS_TYPES_H
 // clang-format off
 #include "stdint.h"
+#include "tinyThreads_error.h"
 
 typedef uint32_t tinyThreadsTime_ms_t;
 typedef uint32_t tinyThreadPeriod_t;

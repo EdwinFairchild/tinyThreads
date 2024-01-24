@@ -58,7 +58,7 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_exti.c \
 Core/Src/system_stm32f4xx.c \
-tinyThreads/src/tinyThreads_kernel_rr.c \
+tinyThreads/src/tinyThreads_core.c \
 tinyThreads/src/tinyThreads_port.c \
 tinyThreads/src/tinyThreads_system.c \
 tinyThreads/src/tinyThreads_thread.c \

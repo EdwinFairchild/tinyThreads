@@ -29,7 +29,7 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
-#include "tinyKernel.h"
+#include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
 #include "tinyThreads_thread.h"
 #include "tinyThreads_types.h"
@@ -130,7 +130,7 @@ void thread3(void)
         // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
         HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-        thread_sleep(500);
+        tt_ThreadSleep(500);
     }
 }
 
@@ -168,12 +168,12 @@ int main(void)
     /* USER CODE BEGIN 2 */
     //  add user threads
     printf("Start of application\r\n");
-    if (tinyKernel_init() == TINYTHREADS_OK)
+    if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        tinyKernel_addThread(thread1, 10, 1);
-        tinyKernel_addThread(thread2, 10, 1);
-        tinyKernel_addThread(thread3, 10, 1);
-        tinyKernel_run(); // should not return from this
+        tt_ThreadAdd(thread1, 10, 1);
+        tt_ThreadAdd(thread2, 10, 1);
+        tt_ThreadAdd(thread3, 10, 1);
+        tt_CoreRun(); // should not return from this
     }
     else
     {

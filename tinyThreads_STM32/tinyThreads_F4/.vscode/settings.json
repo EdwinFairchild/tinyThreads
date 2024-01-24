@@ -25,7 +25,8 @@
         "tinythreads_types.h": "c",
         "tinythreads_system.h": "c",
         "errno.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "tinythreads_core.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.executable": "/usr/bin/clang-format",
