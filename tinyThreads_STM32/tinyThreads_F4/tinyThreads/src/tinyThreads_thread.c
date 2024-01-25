@@ -170,7 +170,7 @@ static TinyThreadsStatus tinyThread_canAddThread(void)
  * stacks are in decending order
  * this is why we set the stack pointer to the last element of the stack
  ***************************************************************************/
-TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
+static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
 
@@ -263,7 +263,6 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t perio
 */
 __attribute__((naked)) void PendSV_Handler(void)
 {
-    port_dbg_signal_2_deassert();
     port_dbg_signal_1_assert();
     // disble interrupts
     __disable_irq();
@@ -323,7 +322,10 @@ __attribute__((naked)) void PendSV_Handler(void)
     /*  return from interrupt
         this will pop the exception frame from the stack and return to the next thread
     */
+
+    // port_dbg_signal_1_deassert();
     port_dbg_signal_1_deassert();
+
     __asm("BX LR");
 }
 

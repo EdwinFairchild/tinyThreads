@@ -72,7 +72,6 @@ extern uint32_t tinyThread_tick;
 #define tinyThread_tick_get() (tinyThread_tick)
 
 TinyThreadsStatus tt_CoreInit(void);
-TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
 TinyThreadsStatus tt_CoreRun(void);
 void tt_CoreSystemTickHandler(void);
 

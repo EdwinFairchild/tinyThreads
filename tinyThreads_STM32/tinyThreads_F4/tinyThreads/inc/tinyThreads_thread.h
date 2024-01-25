@@ -17,13 +17,6 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t perio
  * 
  * 
  **************************************************************************/
-TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
-
-/**************************************************************************
- * TODO :
- * 
- * 
- **************************************************************************/
 TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms);
 
 /**************************************************************************

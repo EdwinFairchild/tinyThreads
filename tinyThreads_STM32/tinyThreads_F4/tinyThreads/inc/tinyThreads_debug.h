@@ -22,7 +22,9 @@
     __STATIC_FORCEINLINE void port_dbg_signal_1_deassert(void)
     {
         // set GPIOC pin 9 low using registers
-        GPIOC->BSRR = GPIO_BSRR_BR_9;
+        //do a nop to make sure the signal is low
+        // GPIOC->BSRR = GPIO_BSRR_BR_9; // not sure BSRR wants to be called twice to work
+        GPIOC->ODR &= ~GPIO_ODR_OD9;
     }
 
     __STATIC_FORCEINLINE void port_dbg_signal_2_assert(void)
@@ -40,6 +42,8 @@
     #define debug(err) ((void)0)
     #define port_dbg_signal_1_assert() ((void)0)
     #define port_dbg_signal_1_deassert() ((void)0)
+    #define port_dbg_signal_2_assert() ((void)0)
+    #define port_dbg_signal_2_deassert() ((void)0)
 #endif
 
 #endif // CFG_TINYTHREADS_DEBUG_H
