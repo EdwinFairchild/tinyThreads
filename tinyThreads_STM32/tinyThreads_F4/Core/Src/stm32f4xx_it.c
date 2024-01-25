@@ -190,7 +190,7 @@ void DebugMon_Handler(void)
 void SysTick_Handler(void)
 {
     /* USER CODE BEGIN SysTick_IRQn 0 */
-    tinyThread_isr_system_thread();
+    tt_CoreSystemTickHandler();
     /* USER CODE END SysTick_IRQn 0 */
 
     /* USER CODE BEGIN SysTick_IRQn 1 */

@@ -33,8 +33,6 @@ tinyThreadsTime_ms_t tinyThread_tick = 0;
 
 /***************| function prototypes |**********************/
 
-static TinyThreadsStatus update_non_ready_threads(void);
-static void updateNextThreadPtr(void);
 static bool tinyThread_isValidTcb(tinyThread_tcb_idx id);
 /**************************************************************************
  * linked list functions for : tcb linked list and non ready threads linked list
@@ -257,30 +255,6 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t perio
     return id;
 }
 
-// TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c
-/**************************************************************************
- * System timer interrupt handler
- * - Increment the system tick
- * - Update threads in non ready state
- * - Find next ready thread and go to it
- * - Generate PendSV interrupt
- **************************************************************************/
-void tinyThread_isr_system_thread(void)
-{
-    tt_tick_inc();
-    // update threads in non ready state
-    update_non_ready_threads();
-
-    // this should be shecked in the linked list for non ready threads
-    // check the thread control block to see if its time to switch it out (Round Robin)
-    if (tinyThread_current_tcb->period_ms <= (tinyThread_tick_get() - tinyThread_current_tcb->lastRunTime))
-    {
-        updateNextThreadPtr();
-        // generate pendsv interrupt
-        SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-    }
-}
-
 /* enter exception
     this will push the exception frame onto the stack
     and set the stack pointer to the top of the stack, knowing this
@@ -289,6 +263,8 @@ void tinyThread_isr_system_thread(void)
 */
 __attribute__((naked)) void PendSV_Handler(void)
 {
+    port_dbg_signal_2_deassert();
+    port_dbg_signal_1_assert();
     // disble interrupts
     __disable_irq();
     // clear pendsv interrupt
@@ -314,7 +290,7 @@ __attribute__((naked)) void PendSV_Handler(void)
     __asm("STR sp, [r1]");
 
     /************************ Restore next thread ************************
-     * tinyThread_isr_system_thread function will determine which thread comes next
+     * tt_CoreSystemTickHandler function will determine which thread comes next
      * and set tinyThread_next_tcb */
     __asm("LDR r1, =tinyThread_next_tcb");
     /*  derefrence the address at r1 (get the value at that address)
@@ -347,6 +323,7 @@ __attribute__((naked)) void PendSV_Handler(void)
     /*  return from interrupt
         this will pop the exception frame from the stack and return to the next thread
     */
+    port_dbg_signal_1_deassert();
     __asm("BX LR");
 }
 
@@ -358,10 +335,10 @@ tinyThreadsTime_ms_t tt_ThreadGetLastRunTime()
 void tt_ThreadYield(void)
 {
     // when yeilding we always want to go to the next thread
-    updateNextThreadPtr();
+    tt_ThreadUpdateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
-static void updateNextThreadPtr(void)
+void tt_ThreadUpdateNextThreadPtr(void)
 {
     // travese the tcbs to find the next ready thread
     tinyThread_next_tcb = tinyThread_current_tcb->next;
@@ -384,7 +361,7 @@ TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
     return err;
 }
 
-static TinyThreadsStatus update_non_ready_threads(void)
+TinyThreadsStatus tt_ThreadUpdateInactive(void)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     // travese the non ready threads list and update the sleep counter

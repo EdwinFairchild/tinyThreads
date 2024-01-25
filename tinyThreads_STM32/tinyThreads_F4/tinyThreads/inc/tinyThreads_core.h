@@ -14,6 +14,7 @@
 #include "tinyThreads_system.h"
 #include "tinyThreads_types.h"
 #include "tinyThreads_thread.h"
+#include "tinyThreads_debug.h"
 
 #include "stdlib.h"
 
@@ -73,7 +74,6 @@ extern uint32_t tinyThread_tick;
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX);
 TinyThreadsStatus tt_CoreRun(void);
-
-void tinyThread_isr_system_thread(void);
+void tt_CoreSystemTickHandler(void);
 
 #endif // TINYKERNEL_H

@@ -4,7 +4,7 @@
         {
             "name": "Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchThread": "flash",
+            "preLaunchTask": "flash",
             "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
@@ -23,7 +23,7 @@
         {
             "name": "Erase & Flash & Debug",
             "cwd": "${workspaceRoot}",
-            "preLaunchThread": "wipe & flash",
+            "preLaunchTask": "wipe & flash",
             "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",

@@ -78,3 +78,30 @@ TinyThreadsStatus tt_CoreRun(void)
 
     return err;
 }
+
+// TODO: I should have a scheduler file and this will go in there scheduler_round_robin.c
+/**************************************************************************
+ * System timer interrupt handler
+ * - Increment the system tick
+ * - Update threads in non ready state
+ * - Find next ready thread and go to it
+ * - Generate PendSV interrupt
+ **************************************************************************/
+void tt_CoreSystemTickHandler(void)
+{
+    port_dbg_signal_2_assert();
+    current_tcb = tt_ThreadGetCurrentTcb();
+    tt_tick_inc();
+    // update threads in non ready state
+    tt_ThreadUpdateInactive();
+
+    // this should be shecked in the linked list for non ready threads
+    // check the thread control block to see if its time to switch it out (Round Robin)
+    if (current_tcb->period_ms <= (tinyThread_tick_get() - current_tcb->lastRunTime))
+    {
+        tt_ThreadUpdateNextThreadPtr();
+        // generate pendsv interrupt
+        SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+    }
+    port_dbg_signal_2_deassert();
+}

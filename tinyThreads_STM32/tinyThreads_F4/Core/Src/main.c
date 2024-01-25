@@ -114,15 +114,15 @@ void thread2(void)
         // uint32_t currentTime = tinyThread_tick_get();
         // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
-        if (counter == 1000)
-        {
-            tt_ThreadPause(thread3_id);
-        }
-        if (counter == 2000)
-        {
-            tt_ThreadResume(thread3_id);
-            counter = 0;
-        }
+        // if (counter == 1000)
+        // {
+        //     tt_ThreadPause(thread3_id);
+        // }
+        // if (counter == 2000)
+        // {
+        //     tt_ThreadResume(thread3_id);
+        //     counter = 0;
+        // }
         counter++;
         printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
@@ -139,9 +139,8 @@ void thread3(void)
         // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
-        // HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-        //  tt_ThreadSleep(500);
-        printf(">>>>>>>>>>>>>>>>>>>>\r\n");
+        HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+        tt_ThreadSleep(500);
     }
 }
 
