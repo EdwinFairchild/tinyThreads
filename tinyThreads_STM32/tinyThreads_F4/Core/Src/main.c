@@ -54,7 +54,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+tinyThread_tcb_idx thread1_id, thread2_id, thread3_id;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,13 +107,23 @@ void thread1(void)
 }
 void thread2(void)
 {
-    // static uint32_t prev_runtime = 0;
+    static uint32_t counter = 0;
     while (1)
     {
         // elapsed time since last run
         // uint32_t currentTime = tinyThread_tick_get();
         // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 2: %d\r\n", elapsed_time);
+        if (counter == 1000)
+        {
+            tt_ThreadPause(thread3_id);
+        }
+        if (counter == 2000)
+        {
+            tt_ThreadResume(thread3_id);
+            counter = 0;
+        }
+        counter++;
         printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
     }
 }
@@ -129,8 +139,9 @@ void thread3(void)
         // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
         // printf("Thread 3: %d\r\n", elapsed_time);
         // toggle led
-        HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-        tt_ThreadSleep(500);
+        // HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+        //  tt_ThreadSleep(500);
+        printf(">>>>>>>>>>>>>>>>>>>>\r\n");
     }
 }
 
@@ -168,7 +179,7 @@ int main(void)
     /* USER CODE BEGIN 2 */
     //  add user threads
     printf("Start of application\r\n");
-    tinyThread_tcb_idx thread1_id, thread2_id, thread3_id;
+
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
         thread1_id = tt_ThreadAdd(thread1, 10, 1);

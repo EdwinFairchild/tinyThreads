@@ -28,11 +28,24 @@ TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms);
 
 /**************************************************************************
  * tt_ThreadWake
- * Use to wake a thread that is in sleeping via tt_ThreadSleep
- *  returns TINYTHREADS_OK if successful
+ * Used to wake a thread that is in sleeping via tt_ThreadSleep
+ * returns TINYTHREADS_OK if successful
  **************************************************************************/
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id);
 
+/**************************************************************************
+ * tt_ThreadPause
+ * Used to pause a thread that is running
+ * returns TINYTHREADS_OK if successful
+ **************************************************************************/
+TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id);
+
+/**************************************************************************
+ * tt_ThreadResume
+ * Used to resume a thread thatthat is paused via tt_ThreadPause
+ * returns TINYTHREADS_OK if successful
+ **************************************************************************/
+TinyThreadsStatus tt_ThreadResume(tinyThread_tcb_idx id);
 /**************************************************************************
  * TODO :
  * 

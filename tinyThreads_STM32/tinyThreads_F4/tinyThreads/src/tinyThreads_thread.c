@@ -391,9 +391,9 @@ static TinyThreadsStatus update_non_ready_threads(void)
     tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
     while (temp != NULL)
     {
-        if (temp->tcb->state == THREAD_STATE_SLEEPING)
+        switch (temp->tcb->state)
         {
-
+        case THREAD_STATE_SLEEPING:
             if (temp->tcb->sleep_count_ms > 0)
             {
                 temp->tcb->sleep_count_ms--;
@@ -405,6 +405,18 @@ static TinyThreadsStatus update_non_ready_threads(void)
                 // remove from non ready list
                 tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
             }
+            break;
+        case THREAD_STATE_PAUSED:
+            // do nothing,
+            // thread is paused directly from tt_ThreadPause
+            break;
+        case THREAD_STATE_READY:
+            // do nothing
+            break;
+
+        case THREAD_STATE_BLOCKED:
+            // do nothing
+            break;
         }
         temp = temp->next;
     }
@@ -427,6 +439,35 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
     }
     return err;
 }
+
+TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
+{
+    TinyThreadsStatus err = TINYTHREADS_ERROR;
+    if (tinyThread_isValidTcb(id))
+    {
+        tinyThreads_sys_CsEnter();
+        // set state to paused
+        tinyThread_thread_ctl[id].state = THREAD_STATE_PAUSED;
+        err = TINYTHREADS_OK;
+        tinyThreads_sys_CsExit();
+    }
+    return err;
+}
+
+TinyThreadsStatus tt_ThreadResume(tinyThread_tcb_idx id)
+{
+    TinyThreadsStatus err = TINYTHREADS_ERROR;
+    if (tinyThread_isValidTcb(id))
+    {
+        tinyThreads_sys_CsEnter();
+        // set state to ready
+        tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
+        err = TINYTHREADS_OK;
+        tinyThreads_sys_CsExit();
+    }
+    return err;
+}
+
 // TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 {
