@@ -27,7 +27,8 @@
         "errno.h": "c",
         "gpio.h": "c",
         "tinythreads_core.h": "c",
-        "tinythreads_thread.h": "c"
+        "tinythreads_thread.h": "c",
+        "thread": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.style": "Microsoft",

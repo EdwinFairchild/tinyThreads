@@ -78,7 +78,7 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
     temp->tcb = &tinyThread_thread_ctl[id];
-    temp->tcb->state = THREAD_STATE_SLEEPING;
+    temp->tcb->state |= THREAD_STATE_SLEEPING;
     temp->next = NULL;
     temp->prev = NULL;
     // check if head is null
@@ -338,6 +338,7 @@ void tt_ThreadYield(void)
     tt_ThreadUpdateNextThreadPtr();
     SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 }
+
 void tt_ThreadUpdateNextThreadPtr(void)
 {
     // travese the tcbs to find the next ready thread
@@ -347,18 +348,6 @@ void tt_ThreadUpdateNextThreadPtr(void)
         // we didnt break out of loop so keep looking for next ready thread
         tinyThread_next_tcb = tinyThread_next_tcb->next;
     }
-}
-
-TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
-{
-    TinyThreadsStatus err = TINYTHREADS_OK;
-    tinyThreads_sys_CsEnter();
-    // set sleep counter
-    tinyThread_current_tcb->sleep_count_ms = time_ms;
-    tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
-    tinyThreads_sys_CsExit();
-    tt_ThreadYield();
-    return err;
 }
 
 TinyThreadsStatus tt_ThreadUpdateInactive(void)
@@ -378,7 +367,7 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
             else
             {
                 // set state to ready
-                temp->tcb->state = THREAD_STATE_READY;
+                temp->tcb->state &= ~THREAD_STATE_SLEEPING;
                 // remove from non ready list
                 tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
             }
@@ -400,16 +389,28 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
     return err; // TODO : error check
 }
 
+TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
+{
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    tinyThreads_sys_CsEnter();
+    // set sleep counter
+    tinyThread_current_tcb->sleep_count_ms = time_ms;
+    tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
+    tinyThreads_sys_CsExit();
+    tt_ThreadYield();
+    return err;
+}
+
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
-    if (tinyThread_isValidTcb(id))
+    if (tinyThread_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_SLEEPING))
     {
         tinyThreads_sys_CsEnter();
-        // set state to ready
-        tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
+        // clear sleeping state
+        tinyThread_thread_ctl[id].state &= ~THREAD_STATE_SLEEPING;
         // set sleep time to 0
-        tinyThread_thread_ctl[id].sleep_count_ms = 0;
+        // tinyThread_thread_ctl[id].sleep_count_ms = 0;
         // remove from non ready list
         err = tinyThread_non_ready_thread_remove_ll(id);
         tinyThreads_sys_CsExit();
@@ -424,7 +425,7 @@ TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
     {
         tinyThreads_sys_CsEnter();
         // set state to paused
-        tinyThread_thread_ctl[id].state = THREAD_STATE_PAUSED;
+        tinyThread_thread_ctl[id].state |= THREAD_STATE_PAUSED;
         err = TINYTHREADS_OK;
         tinyThreads_sys_CsExit();
     }
@@ -436,11 +437,11 @@ TinyThreadsStatus tt_ThreadResume(tinyThread_tcb_idx id)
     // TODO : this will put any thread in the ready state, even if it was blocked
     // or sleeping, should I check for that? do I want a global resume?
     TinyThreadsStatus err = TINYTHREADS_ERROR;
-    if (tinyThread_isValidTcb(id))
+    if (tinyThread_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_PAUSED))
     {
         tinyThreads_sys_CsEnter();
-        // set state to ready
-        tinyThread_thread_ctl[id].state = THREAD_STATE_READY;
+        // clear paused bit
+        tinyThread_thread_ctl[id].state &= ~THREAD_STATE_PAUSED;
         err = TINYTHREADS_OK;
         tinyThreads_sys_CsExit();
     }
