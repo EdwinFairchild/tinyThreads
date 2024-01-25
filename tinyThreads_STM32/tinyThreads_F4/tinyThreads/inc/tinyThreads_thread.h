@@ -59,7 +59,7 @@ tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id);
  **************************************************************************/
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void);
 
-void tt_ThreadUpdateNextThreadPtr(void);
+void              tt_ThreadUpdateNextThreadPtr(void);
 TinyThreadsStatus tt_ThreadUpdateInactive(void);
-void tt_ThreadYield(void);
+void              tt_ThreadYield(void);
 #endif // TINYTHREADS_TASK_H

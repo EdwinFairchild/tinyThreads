@@ -21,7 +21,7 @@
 ************************| TintyThread thread count |***************************
 ******************************************************************************/
 #define TT_SYSTEM_THREADS 1
-#define TT_MAX_THREADS (CFG_TINYTHREADS_NUMBER_OF_THREADS + TT_SYSTEM_THREADS)
+#define TT_MAX_THREADS    (CFG_TINYTHREADS_NUMBER_OF_THREADS + TT_SYSTEM_THREADS)
 /***************************************************************************
 **************| Exception frame |*******************************************
 ****************************************************************************
@@ -39,36 +39,36 @@ R2
 R1
 R0 (lowest address value) */
 
-#define TT_TOTAL_STACK_SIZE (TT_MAX_THREADS * CFG_TINYTHREADS_STACK_SIZE)
-#define TT_TOP_OF_STACK (CFG_TINYTHREADS_STACK_SIZE - 1U)
+#define TT_TOTAL_STACK_SIZE    (TT_MAX_THREADS * CFG_TINYTHREADS_STACK_SIZE)
+#define TT_TOP_OF_STACK        (CFG_TINYTHREADS_STACK_SIZE - 1U)
 #define TT_EXCEPTION_FRAME_PSR TT_TOP_OF_STACK
-#define TT_EXCEPTION_FRAME_PC (TT_TOP_OF_STACK - 1U)
-#define TT_EXCEPTION_FRAME_LR (TT_TOP_OF_STACK - 2U)
+#define TT_EXCEPTION_FRAME_PC  (TT_TOP_OF_STACK - 1U)
+#define TT_EXCEPTION_FRAME_LR  (TT_TOP_OF_STACK - 2U)
 #define TT_EXCEPTION_FRAME_R12 (TT_TOP_OF_STACK - 3U)
-#define TT_EXCEPTION_FRAME_R3 (TT_TOP_OF_STACK - 4U)
-#define TT_EXCEPTION_FRAME_R2 (TT_TOP_OF_STACK - 5U)
-#define TT_EXCEPTION_FRAME_R1 (TT_TOP_OF_STACK - 6U)
-#define TT_EXCEPTION_FRAME_R0 (TT_TOP_OF_STACK - 7U)
+#define TT_EXCEPTION_FRAME_R3  (TT_TOP_OF_STACK - 4U)
+#define TT_EXCEPTION_FRAME_R2  (TT_TOP_OF_STACK - 5U)
+#define TT_EXCEPTION_FRAME_R1  (TT_TOP_OF_STACK - 6U)
+#define TT_EXCEPTION_FRAME_R0  (TT_TOP_OF_STACK - 7U)
 
 /******************************************************************************
 *****************| TintyThread control block member offsets |******************
 ******************************************************************************/
 // This is to not use magic numbers in the assembly code
-#define TINYTASK_TCB_SP_OFFSET 0
-#define TINYTASK_TCB_NEXT_PTR_OFFSET 4
-#define TINYTASK_TCB_PREV_PTR_OFFSET 8
-#define TINYTASK_TCB_PERIOD_OFFSET 12
-#define TINYTASK_TCB_LAST_RUNTIME_OFFSET 16
+#define TINYTASK_TCB_SP_OFFSET            0
+#define TINYTASK_TCB_NEXT_PTR_OFFSET      4
+#define TINYTASK_TCB_PREV_PTR_OFFSET      8
+#define TINYTASK_TCB_PERIOD_OFFSET        12
+#define TINYTASK_TCB_LAST_RUNTIME_OFFSET  16
 #define TINYTASK_TCB_TASK_PRIORITY_OFFSET 20
-#define TINYTASK_TCB_TASK_STATE_OFFSET 24
+#define TINYTASK_TCB_TASK_STATE_OFFSET    24
 /*****************************************************************************
 ******************************************************************************/
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyThread_tick;
-#define tt_tick_inc() (++tinyThread_tick)
+#define tt_tick_inc()           (++tinyThread_tick)
 #define tinyThread_tick_reset() (tinyThread_tick = 0)
-#define tinyThread_tick_get() (tinyThread_tick)
+#define tinyThread_tick_get()   (tinyThread_tick)
 
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_CoreRun(void);

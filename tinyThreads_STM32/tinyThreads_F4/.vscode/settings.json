@@ -33,7 +33,7 @@
         "core_cm4.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
-    "clang-format.style": "Microsoft",
+    "clang-format.style": "file",
     "editor.formatOnSave": true,
     "[c]": {
         "editor.defaultFormatter": "xaver.clang-format"
