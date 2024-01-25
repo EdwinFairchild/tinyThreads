@@ -28,7 +28,9 @@
         "gpio.h": "c",
         "tinythreads_core.h": "c",
         "tinythreads_thread.h": "c",
-        "thread": "c"
+        "thread": "c",
+        "string.h": "c",
+        "core_cm4.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.style": "Microsoft",

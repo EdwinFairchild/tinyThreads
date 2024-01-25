@@ -1,6 +1,6 @@
 #ifndef TINYTASK_SYSTEM_H
 #define TINYTASK_SYSTEM_H
-// clang-format off
+
 #include "stdint.h"
 #include "tinyThreads_port.h"
 /*************************************************

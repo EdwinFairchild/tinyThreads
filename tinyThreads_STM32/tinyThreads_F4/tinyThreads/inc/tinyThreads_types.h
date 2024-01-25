@@ -1,6 +1,6 @@
 #ifndef TINYTHREADS_TYPES_H
 #define TINYTHREADS_TYPES_H
-// clang-format off
+
 #include "stdint.h"
 #include "tinyThreads_error.h"
 
@@ -10,10 +10,10 @@ typedef uint32_t tinyThreadPriority_t;
 typedef int32_t tinyThread_tcb_idx;
 typedef uint32_t tinyThread_state;
 
-#define THREAD_STATE_READY      (0x00)
-#define THREAD_STATE_BLOCKED    (1<<1)
-#define THREAD_STATE_SLEEPING   (1<<2)
-#define THREAD_STATE_PAUSED     (1<<3)
+#define THREAD_STATE_READY (0x00)
+#define THREAD_STATE_BLOCKED (1 << 1)
+#define THREAD_STATE_SLEEPING (1 << 2)
+#define THREAD_STATE_PAUSED (1 << 3)
 
 /* Thread Control Block */
 typedef struct tinyThread_tcb tinyThread_tcb_t;
@@ -26,7 +26,7 @@ typedef struct tinyThread_tcb
     tinyThreadPeriod_t period_ms;        // Period of the thread
     tinyThreadsTime_ms_t lastRunTime;    // Last time the thread ran
     tinyThreadPriority_t priority;       // Priority of the thread
-    tinyThread_state state;            // State of the thread
+    tinyThread_state state;              // State of the thread
     tinyThreadsTime_ms_t sleep_count_ms; // sleep count in ms
     tinyThread_tcb_idx id;               // Unique thread identifier
 } tinyThread_tcb;
