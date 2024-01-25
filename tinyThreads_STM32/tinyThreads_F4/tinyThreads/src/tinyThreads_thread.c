@@ -456,6 +456,8 @@ TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
 
 TinyThreadsStatus tt_ThreadResume(tinyThread_tcb_idx id)
 {
+    // TODO : this will put any thread in the ready state, even if it was blocked
+    // or sleeping, should I check for that? do I want a global resume?
     TinyThreadsStatus err = TINYTHREADS_ERROR;
     if (tinyThread_isValidTcb(id))
     {
