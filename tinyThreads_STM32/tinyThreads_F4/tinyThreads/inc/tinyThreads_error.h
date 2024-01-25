@@ -8,6 +8,7 @@
     TINYTHREADS_OUT_OF_MEMORY    = -3,    // Out of memory
     TINYTHREADS_TIMEOUT = -4,          // Timeout
     TINYTHREADS_MAX_THREADS_REACHED = -5, // Max threads reached
+    TINYTHREADS_ERROR = -6,              // Generic error
    
     // Add more error codes as needed
 }TinyThreadsStatus;
