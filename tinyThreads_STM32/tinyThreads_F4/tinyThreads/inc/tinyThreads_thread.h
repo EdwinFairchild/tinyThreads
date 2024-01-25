@@ -41,11 +41,11 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id);
 TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id);
 
 /**************************************************************************
- * tt_ThreadResume
+ * tt_ThreadUnPause
  * Used to resume a thread thatthat is paused via tt_ThreadPause
  * returns TINYTHREADS_OK if successful
  **************************************************************************/
-TinyThreadsStatus tt_ThreadResume(tinyThread_tcb_idx id);
+TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id);
 /**************************************************************************
  * TODO :
  * 

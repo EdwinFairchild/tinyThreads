@@ -120,7 +120,7 @@ void thread2(void)
         // }
         // if (counter == 2000)
         // {
-        //     tt_ThreadResume(thread3_id);
+        //     tt_ThreadUnPause(thread3_id);
         //     counter = 0;
         // }
         counter++;
@@ -130,7 +130,7 @@ void thread2(void)
         }
         if (counter == 2000)
         {
-            tt_ThreadResume(thread3_id);
+            tt_ThreadUnPause(thread3_id);
             // counter = 0;
         }
         printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
