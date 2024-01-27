@@ -36,12 +36,6 @@
                 "build"
             ],
             "dependsOrder": "sequence"
-        },
-        {
-            "label": "Display message",
-            "type": "shell",
-            "command": "echo 'Erase complete'",
-            "problemMatcher": {}
         }
     ]
 }

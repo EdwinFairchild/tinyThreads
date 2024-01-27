@@ -72,6 +72,14 @@ extern uint32_t tinyThread_tick;
 
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_CoreRun(void);
-void tt_CoreSystemTickHandler(void);
+void              tt_CoreSystemTickHandler(void);
+
+/*************************************************
+ * Critical sections should be nested
+ * and only the outermost critical section
+ * should enable/disable interrupts
+ *************************************************/
+void tt_CoreCsEnter(void);
+void tt_CoreCsExit(void);
 
 #endif // TINYKERNEL_H

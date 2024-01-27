@@ -1,8 +1,10 @@
 #include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
 
+// TODO : save state of interrupts before entering cs and restore afterwards
+static uint32_t cs_nesting = 0;
 tinyThread_tcb *current_tcb = NULL;
-static void systemThread(void)
+static void     systemThread(void)
 {
     static volatile uint32_t threadCount = 0;
     while (1)
@@ -93,7 +95,10 @@ void tt_CoreSystemTickHandler(void)
     current_tcb = tt_ThreadGetCurrentTcb();
     tt_tick_inc();
     // update threads in non ready state
-    tt_ThreadUpdateInactive();
+    if (tt_ThreadGetInactiveThreadCount())
+    {
+        tt_ThreadUpdateInactive();
+    }
 
     // this should be shecked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
@@ -104,4 +109,22 @@ void tt_CoreSystemTickHandler(void)
         SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
     }
     port_dbg_signal_2_deassert();
+}
+
+void tt_CoreCsEnter(void)
+{
+    // only need to do this once
+    if (cs_nesting == 0)
+    {
+        __disable_irq();
+    }
+    cs_nesting++;
+}
+void tt_CoreCsExit(void)
+{
+    cs_nesting--;
+    if (cs_nesting == 0)
+    {
+        __enable_irq();
+    }
 }
