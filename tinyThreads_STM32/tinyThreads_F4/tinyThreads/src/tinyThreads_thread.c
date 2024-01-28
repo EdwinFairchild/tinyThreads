@@ -539,6 +539,7 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
 
     // We get to this point if there is a notification or we timedout
     // or if timeout is 0 or if there is a notification
+    // TODO : we should check if we timedout or not could be useful
     if (tempTcb->notifyVal != NULL)
     {
         // read the value

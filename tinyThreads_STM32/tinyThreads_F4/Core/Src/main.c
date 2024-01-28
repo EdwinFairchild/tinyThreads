@@ -21,7 +21,6 @@
 #include "gpio.h"
 #include "usart.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "errno.h"
@@ -55,7 +54,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-tinyThread_tcb_idx thread1_id, thread2_id, thread3_id;
+tinyThread_tcb_idx   thread1_id, thread2_id, thread3_id;
+static uint32_t      notifyCounter = 0;
+tinyThreadsTime_ms_t previousTime = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,7 +99,8 @@ void thread1(void)
     // static uint32_t prev_runtime = 0;
     while (1)
     {
-        printf("[1]: %d:%d\r\n", (int)tt_ThreadGetSleepCount(3), (int)tt_ThreadGetNotifyToCount(3));
+        printf("thread1\r\n");
+        tt_ThreadSleep(1000);
     }
 }
 void thread2(uint32_t notifyal)
@@ -106,6 +108,8 @@ void thread2(uint32_t notifyal)
     static uint32_t counter = 0;
     while (1)
     {
+        printf("thread2\r\n");
+        tt_ThreadSleep(1000);
     }
 }
 void thread3(void)
@@ -114,23 +118,22 @@ void thread3(void)
     static volatile uint32_t notifyVal = 0;
     while (1)
     {
-        if (counter++ == 10)
-        {
-            tt_ThreadNotifyWait(5000, &notifyVal);
-            printf("Addres of notifyVal: %p\r\n", &notifyVal);
-        }
+
+        tt_ThreadNotifyWait(5000, &notifyVal);
         printf("notifyVal: %d\r\n", (int)notifyVal);
+
         //   tt_ThreadSleep(500);
     }
 }
 void EXTI15_10_IRQHandler(void)
 {
-    /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-
-    /* USER CODE END EXTI15_10_IRQn 0 */
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    /* USER CODE BEGIN EXTI15_10_IRQn 1 */
-    tt_ThreadNotify(thread3_id, 42, true);
+    tinyThreadsTime_ms_t currentTime = tinyThread_tick_get();
+    if (currentTime - previousTime > 400)
+    {
+        previousTime = currentTime;
+        tt_ThreadNotify(thread3_id, notifyCounter++, true);
+    }
 
     /* USER CODE END EXTI15_10_IRQn 1 */
 }
