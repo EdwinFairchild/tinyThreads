@@ -34,7 +34,7 @@
 #include "tinyThreads_thread.h"
 #include "tinyThreads_types.h"
 #include <sys/unistd.h> // For STDOUT_FILENO, STDERR_FILENO
-                        /* USER CODE END Includes */
+/* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
@@ -54,7 +54,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-tinyThread_tcb_idx thread1_id, thread2_id, thread3_id;
+tinyThread_tcb_idx   thread1_id, thread2_id, thread3_id;
+static uint32_t      notifyCounter = 0;
+tinyThreadsTime_ms_t previousTime = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,65 +96,47 @@ int _write(int file, char *data, int len)
 
 void thread1(void)
 {
-
     // static uint32_t prev_runtime = 0;
     while (1)
     {
-        // elapsed time since last run
-        // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
-        // printf("Thread 1: %d\r\n", (int)elapsed_time);
-        printf("[1] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
+        printf("thread1\r\n");
+        tt_ThreadSleep(1000);
     }
 }
-void thread2(void)
+void thread2(uint32_t notifyal)
 {
     static uint32_t counter = 0;
     while (1)
     {
-        // elapsed time since last run
-        // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
-        // printf("Thread 2: %d\r\n", elapsed_time);
-        // if (counter == 1000)
-        // {
-        //     tt_ThreadPause(thread3_id);
-        // }
-        // if (counter == 2000)
-        // {
-        //     tt_ThreadUnPause(thread3_id);
-        //     counter = 0;
-        // }
-        counter++;
-        if (counter == 1000)
-        {
-            tt_ThreadPause(thread3_id);
-        }
-        if (counter == 2000)
-        {
-            tt_ThreadUnPause(thread3_id);
-            // counter = 0;
-        }
-        printf("[2] T3SC: %d\r\n", (int)tt_ThreadGetSleepCount(3));
+        printf("thread2\r\n");
+        tt_ThreadSleep(1000);
     }
 }
-
 void thread3(void)
 {
-    // static uint32_t prev_runtime = 0;
-    // static uint32_t count = 0;
+    static uint32_t          counter = 0;
+    static volatile uint32_t notifyVal = 0;
     while (1)
     {
-        // elapsed time since last run
-        // uint32_t currentTime = tinyThread_tick_get();
-        // uint32_t elapsed_time = currentTime - tt_ThreadGetLastRunTime();
-        // printf("Thread 3: %d\r\n", elapsed_time);
-        // toggle led
-        HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-        tt_ThreadSleep(500);
+
+        tt_ThreadNotifyWait(5000, &notifyVal);
+        printf("notifyVal: %d\r\n", (int)notifyVal);
+
+        //   tt_ThreadSleep(500);
     }
 }
+void EXTI15_10_IRQHandler(void)
+{
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+    tinyThreadsTime_ms_t currentTime = tinyThread_tick_get();
+    if (currentTime - previousTime > 400)
+    {
+        previousTime = currentTime;
+        tt_ThreadNotify(thread3_id, notifyCounter++, true);
+    }
 
+    /* USER CODE END EXTI15_10_IRQn 1 */
+}
 /* USER CODE END 0 */
 
 /**

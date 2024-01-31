@@ -13,7 +13,12 @@
 uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
 
 /* Static allocation of Thread Control Block Array*/
+// TODO : make user allocate their TCBs in RAM
+// it will be laste wasteful than me allocating TT_MAX_THREADS amount
+// this will also allow them to decide stack size
 // list of all thread control blocks
+// however this means task list now should be a linked list instead of this array
+// since i wont know array size before hand
 static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
 // used to keep track of current tcb
 tinyThread_tcb *tinyThread_current_tcb = &tinyThread_thread_ctl[0];
@@ -28,12 +33,13 @@ static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 // keep track of number of threads, also used as id
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
+static uint32_t tinyThread_inactive_thread_count = 0;
 /***************| system tick |**********************/
 tinyThreadsTime_ms_t tinyThread_tick = 0;
 
 /***************| function prototypes |**********************/
 
-static bool tinyThread_isValidTcb(tinyThread_tcb_idx id);
+static bool tt_isValidTcb(tinyThread_tcb_idx id);
 /**************************************************************************
  * linked list functions for : tcb linked list and non ready threads linked list
  ***************************************************************************/
@@ -78,7 +84,9 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
     temp->tcb = &tinyThread_thread_ctl[id];
-    temp->tcb->state |= THREAD_STATE_SLEEPING;
+    // STATE should be set before calling this function, since task can be
+    // non ready for multiple reasons
+    // temp->tcb->state |= THREAD_STATE_SLEEPING;
     temp->next = NULL;
     temp->prev = NULL;
     // check if head is null
@@ -93,7 +101,7 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
         temp->prev = tinyThread_suspended_threads_list.tail;
         tinyThread_suspended_threads_list.tail = temp;
     }
-
+    tinyThread_inactive_thread_count++;
     return err;
 }
 /**************************************************************************
@@ -107,13 +115,13 @@ static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_id
     // make new node
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
-    if (temp != NULL)
+    if (temp != NULL && tinyThread_inactive_thread_count > 0)
     {
 
         // check if this node is head and then remove and free
         if (tinyThread_suspended_threads_list.head->tcb->id == id)
         {
-            // save the head pointer
+            // save the head pointer so we can free it
             temp = tinyThread_suspended_threads_list.head;
             // new head is the next node
             tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
@@ -145,6 +153,7 @@ static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_id
             free(temp);
             err = TINYTHREADS_OK;
         }
+        tinyThread_inactive_thread_count--;
     }
 
     return err;
@@ -232,6 +241,10 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t perio
         tinyThread_thread_ctl[tinyThreads_thread_Count].prev = NULL;
         tinyThread_thread_ctl[tinyThreads_thread_Count].lastRunTime = (tinyThreadsTime_ms_t)0;
         tinyThread_thread_ctl[tinyThreads_thread_Count].id = tinyThreads_thread_Count;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].notifyVal = NULL;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].sleep_count_ms = 0;
+        tinyThread_thread_ctl[tinyThreads_thread_Count].notify_timeout_count = 0;
+
         tinyThread_tcb_ll_add(period);
         tt_ThreadStackInit(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread.
@@ -385,6 +398,19 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
         case THREAD_STATE_BLOCKED:
             // do nothing
             break;
+        case THREAD_STATE_PENDING_NOTIFY:
+            if (temp->tcb->notify_timeout_count)
+            {
+                temp->tcb->notify_timeout_count--;
+            }
+            else
+            {
+                // set state to ready
+                temp->tcb->state &= ~THREAD_STATE_PENDING_NOTIFY;
+                // remove from non ready list
+                tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
+            }
+            break;
         }
         temp = temp->next;
     }
@@ -394,11 +420,13 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
 TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-    tinyThreads_sys_CsEnter();
+    tt_CoreCsEnter();
+    // set state to sleeping
+    tinyThread_current_tcb->state |= THREAD_STATE_SLEEPING;
     // set sleep counter
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_non_ready_thread_add_ll(tinyThread_current_tcb->id);
-    tinyThreads_sys_CsExit();
+    tt_CoreCsExit();
     tt_ThreadYield();
     return err;
 }
@@ -406,16 +434,16 @@ TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
-    if (tinyThread_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_SLEEPING))
+    if (tt_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_SLEEPING))
     {
-        tinyThreads_sys_CsEnter();
+        tt_CoreCsEnter();
         // clear sleeping state
         tinyThread_thread_ctl[id].state &= ~THREAD_STATE_SLEEPING;
         // set sleep time to 0
         // tinyThread_thread_ctl[id].sleep_count_ms = 0;
         // remove from non ready list
         err = tinyThread_non_ready_thread_remove_ll(id);
-        tinyThreads_sys_CsExit();
+        tt_CoreCsExit();
     }
     return err;
 }
@@ -423,13 +451,13 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
 TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
-    if (tinyThread_isValidTcb(id))
+    if (tt_isValidTcb(id))
     {
-        tinyThreads_sys_CsEnter();
+        tt_CoreCsEnter();
         // set state to paused
         tinyThread_thread_ctl[id].state |= THREAD_STATE_PAUSED;
         err = TINYTHREADS_OK;
-        tinyThreads_sys_CsExit();
+        tt_CoreCsExit();
     }
     return err;
 }
@@ -439,13 +467,13 @@ TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id)
     // TODO : this will put any thread in the ready state, even if it was blocked
     // or sleeping, should I check for that? do I want a global resume?
     TinyThreadsStatus err = TINYTHREADS_ERROR;
-    if (tinyThread_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_PAUSED))
+    if (tt_isValidTcb(id) && (tinyThread_thread_ctl[id].state & THREAD_STATE_PAUSED))
     {
-        tinyThreads_sys_CsEnter();
+        tt_CoreCsEnter();
         // clear paused bit
         tinyThread_thread_ctl[id].state &= ~THREAD_STATE_PAUSED;
         err = TINYTHREADS_OK;
-        tinyThreads_sys_CsExit();
+        tt_CoreCsExit();
     }
     return err;
 }
@@ -454,7 +482,21 @@ TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id)
 tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 {
     // TODO: implement
-    return (tinyThreadsTime_ms_t)42;
+    if (tt_isValidTcb(id))
+    {
+        return tinyThread_thread_ctl[id].sleep_count_ms;
+    }
+    return 0;
+}
+
+tinyThreadsTime_ms_t tt_ThreadGetNotifyToCount(tinyThread_tcb_idx id)
+{
+    // TODO: implement
+    if (tt_isValidTcb(id))
+    {
+        return tinyThread_thread_ctl[id].notify_timeout_count;
+    }
+    return 0;
 }
 
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
@@ -462,7 +504,7 @@ tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
     return tinyThread_current_tcb;
 }
 
-static bool tinyThread_isValidTcb(tinyThread_tcb_idx id)
+static bool tt_isValidTcb(tinyThread_tcb_idx id)
 {
     bool valid = false;
     if (id < tinyThreads_thread_Count)
@@ -470,4 +512,94 @@ static bool tinyThread_isValidTcb(tinyThread_tcb_idx id)
         valid = true;
     }
     return valid;
+}
+
+TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *val)
+{
+    tt_CoreCsEnter();
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    tinyThread_tcb_t *tempTcb = tinyThread_current_tcb;
+
+    // if there is a timeout and there is no data then put the thread in non ready list
+    if (timeout && tempTcb->notifyVal == NULL)
+    {
+        // set notify value to point to the value passed in
+        tempTcb->notifyVal = val;
+        // set state to pending notify
+        tempTcb->state |= THREAD_STATE_PENDING_NOTIFY;
+        // set timeout counter
+        tempTcb->notify_timeout_count = timeout;
+        // add to non ready list
+        tinyThread_non_ready_thread_add_ll(tempTcb->id);
+        // yield
+        tt_CoreCsExit();
+        tt_ThreadYield();
+        // thread will return here after timeout or notification
+    }
+
+    // We get to this point if there is a notification or we timedout
+    // or if timeout is 0 or if there is a notification
+    // TODO : we should check if we timedout or not could be useful
+    if (tempTcb->notifyVal != NULL)
+    {
+        // read the value
+        *val = *(tempTcb->notifyVal);
+        // set value to null
+        tempTcb->notifyVal = NULL;
+    }
+    tt_CoreCsExit();
+    return err;
+}
+
+TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bool overwrite)
+{
+    tt_CoreCsEnter();
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    if (tt_isValidTcb(taskID))
+    {
+
+        tinyThread_tcb_t *tempTcb = &tinyThread_thread_ctl[taskID];
+        // write the data if overwrite is true or if there is no data
+        if (overwrite || tempTcb->notifyVal == NULL)
+        {
+            *(tempTcb->notifyVal) = newVal;
+
+            // check if task is still waiting for notification, otherwise it may have timedout
+            // in hich case do nothing
+            if (tempTcb->state & THREAD_STATE_PENDING_NOTIFY)
+            {
+                // clear the state
+                tempTcb->state &= ~(THREAD_STATE_PENDING_NOTIFY);
+                // reset its counter whether its being used or not
+                tempTcb->notify_timeout_count = 0;
+
+                // if clearing THREAD_STATE_PENDING_NOTIFY bit resulted in state being
+                // THREAD_STATE_READY remove from non-ready list
+                if (tempTcb->state == THREAD_STATE_READY)
+                {
+                    // remove from non ready list
+                    tinyThread_non_ready_thread_remove_ll(tempTcb->id);
+                    // TODO : im preemptive scheduling we need to see if this new ready
+                    //  task is higher priority and if so for a context switch. or maybe
+                    //  let user decide of context switch should happen immediately or not?
+                }
+            }
+        }
+        else
+        {
+            err = TINYTHREADS_NOTIFY_FAILED;
+        }
+    }
+    tt_CoreCsExit();
+    return err;
+}
+
+tinyThread_tcb_idx tt_ThreadGetCurrentID(void)
+{
+    return tinyThread_current_tcb->id;
+}
+
+uint32_t tt_ThreadGetInactiveThreadCount(void)
+{
+    return tinyThread_inactive_thread_count;
 }
