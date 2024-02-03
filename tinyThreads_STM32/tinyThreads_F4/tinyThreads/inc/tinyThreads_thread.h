@@ -9,7 +9,7 @@
  *
  *
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority);
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority);
 
 /**************************************************************************
  * TODO :

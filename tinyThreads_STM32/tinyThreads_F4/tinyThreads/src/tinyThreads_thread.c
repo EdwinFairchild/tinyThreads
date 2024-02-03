@@ -224,7 +224,7 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
  *  accept a 32bit argument that can be used to pass messages in the form of
  * a pointer to a struct or literal number
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(void), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
 {
 
     TinyThreadsStatus err = TINYTHREADS_OK;

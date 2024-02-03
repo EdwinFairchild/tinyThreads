@@ -94,7 +94,7 @@ int _write(int file, char *data, int len)
     return len;
 }
 
-void thread1(void)
+void thread1(uint32_t notifyVal)
 {
     // static uint32_t prev_runtime = 0;
     while (1)
@@ -112,15 +112,15 @@ void thread2(uint32_t notifyal)
         tt_ThreadSleep(1000);
     }
 }
-void thread3(void)
+void thread3(uint32_t notifyVal)
 {
     static uint32_t          counter = 0;
-    static volatile uint32_t notifyVal = 0;
+    static volatile uint32_t newval = 0;
     while (1)
     {
 
-        tt_ThreadNotifyWait(5000, &notifyVal);
-        printf("notifyVal: %d\r\n", (int)notifyVal);
+        tt_ThreadNotifyWait(5000, &newval);
+        printf("notifyVal: %d\r\n", (int)newval);
 
         //   tt_ThreadSleep(500);
     }
