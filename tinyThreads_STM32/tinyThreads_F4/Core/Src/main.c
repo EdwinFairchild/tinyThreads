@@ -174,9 +174,9 @@ int main(void)
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        thread1_id = tt_ThreadAdd(thread1, 10, 1);
-        thread2_id = tt_ThreadAdd(thread2, 10, 1);
-        thread3_id = tt_ThreadAdd(thread3, 10, 1);
+        thread2_id = tt_ThreadAdd(thread2, 10, 1, true);
+        thread3_id = tt_ThreadAdd(thread3, 10, 1, true);
+        thread1_id = tt_ThreadAdd(thread1, 10, 1, true);
         if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||
             thread3_id == TINYTHREADS_MAX_THREADS_REACHED)
         {

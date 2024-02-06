@@ -9,7 +9,8 @@
  *
  *
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority);
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority,
+                                bool ready);
 
 /**************************************************************************
  * TODO :
@@ -94,6 +95,19 @@ void tt_ThreadYield(void);
  **************************************************************************/
 tinyThread_tcb_idx tt_ThreadGetCurrentID(void);
 
+/**************************************************************************
+ * TODO :
+ *
+ *
+ **************************************************************************/
+TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb);
+
+/**************************************************************************
+ * TODO :
+ *
+ *
+ **************************************************************************/
+tinyThread_tcb *tt_ThreadGetTcbByID(tinyThread_tcb_idx id);
 /**************************************************************************
  * TODO :
  *

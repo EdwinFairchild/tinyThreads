@@ -35,6 +35,21 @@ typedef struct tinyThread_tcb
     tinyThread_tcb_idx   id;                   // Unique thread identifier
 } tinyThread_tcb;
 
+/* Linkedlist for ready threads */
+typedef struct tinyThread_ready_threads_node
+{
+    tinyThread_tcb                       *tcb;
+    struct tinyThread_ready_threads_node *next;
+    struct tinyThread_ready_threads_node *prev;
+} tinyThread_ready_threads_node_t;
+
+typedef struct
+{
+    tinyThread_tcb *tcb_ll_head;
+    tinyThread_tcb *tcb_ll_tail;
+
+} tinyThread_ready_threads_list_t;
+
 /* Linkedlist for suspended threads */
 typedef struct tinyThread_suspended_threads_node
 {
