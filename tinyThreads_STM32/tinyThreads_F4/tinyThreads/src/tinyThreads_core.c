@@ -15,13 +15,14 @@ static void     systemThread(void)
 
 TinyThreadsStatus tt_CoreInit(void)
 {
+    // TODO : the err logic here is not correct, i think
     TinyThreadsStatus err = TINYTHREADS_OK;
     // add system related threads
-    err = tt_ThreadAdd(systemThread, 10, 1);
+    tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, 10, 1, true);
     // os cannot function without system thread
-    if (err != TINYTHREADS_OK)
+    if (id >= 0)
     {
-        return err;
+        tt_SetCurrentTcb(tt_ThreadGetTcbByID(id));
     }
 
     return err;

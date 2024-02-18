@@ -21,11 +21,12 @@ uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
 // since i wont know array size before hand
 static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
 // used to keep track of current tcb
-tinyThread_tcb *tinyThread_current_tcb = &tinyThread_thread_ctl[0];
+// TODO : should I make a set curtrent tcb function?
+tinyThread_tcb *tinyThread_current_tcb; //= &tinyThread_thread_ctl[0];
 // used to keep track of next tcb
 static tinyThread_tcb *tinyThread_next_tcb = NULL;
-static tinyThread_tcb *tcb_ll_head = NULL;
-static tinyThread_tcb *tcb_ll_tail = NULL;
+
+static tinyThread_ready_threads_list_t tinyThread_ready_threads_list;
 
 // make a list of suspended threads
 static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
@@ -51,21 +52,21 @@ static bool tt_isValidTcb(tinyThread_tcb_idx id);
  * this linked list contains all threads in all states
  * return : TinyThreadsStatus
  ***************************************************************************/
-static TinyThreadsStatus tinyThread_tcb_ll_add(uint32_t period)
+static TinyThreadsStatus tinyThread_ready_thread_add_ll(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
 
-    if (tcb_ll_head == NULL && tcb_ll_tail == NULL)
+    if (tinyThread_ready_threads_list.tcb_ll_head == NULL && tinyThread_ready_threads_list.tcb_ll_tail == NULL)
     {
         // this is first task (system task)
-        tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count];
-        tcb_ll_head = tcb_ll_tail;
+        tinyThread_ready_threads_list.tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count];
+        tinyThread_ready_threads_list.tcb_ll_head = tinyThread_ready_threads_list.tcb_ll_tail;
     }
     else
     {
-        tcb_ll_tail->next = &tinyThread_thread_ctl[tinyThreads_thread_Count];
-        tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count];
-        tcb_ll_tail->next = tcb_ll_head;
+        tinyThread_ready_threads_list.tcb_ll_tail->next = &tinyThread_thread_ctl[tinyThreads_thread_Count];
+        tinyThread_ready_threads_list.tcb_ll_tail = &tinyThread_thread_ctl[tinyThreads_thread_Count];
+        tinyThread_ready_threads_list.tcb_ll_tail->next = tinyThread_ready_threads_list.tcb_ll_head;
     }
 
     return err;
@@ -83,25 +84,34 @@ static TinyThreadsStatus tinyThread_non_ready_thread_add_ll(tinyThread_tcb_idx i
     // make new node
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
-    temp->tcb = &tinyThread_thread_ctl[id];
-    // STATE should be set before calling this function, since task can be
-    // non ready for multiple reasons
-    // temp->tcb->state |= THREAD_STATE_SLEEPING;
-    temp->next = NULL;
-    temp->prev = NULL;
-    // check if head is null
-    if (tinyThread_suspended_threads_list.head == NULL)
+    if (temp != NULL)
     {
-        tinyThread_suspended_threads_list.head = temp;
-        tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.head;
+
+        temp->tcb = &tinyThread_thread_ctl[id];
+        // STATE should be set before calling this function, since task can be
+        // non ready for multiple reasons
+        // thus im not setting it here
+        // temp->tcb->state |= THREAD_STATE_SLEEPING;
+        temp->next = NULL;
+        temp->prev = NULL;
+        // check if head is null
+        if (tinyThread_suspended_threads_list.head == NULL)
+        {
+            tinyThread_suspended_threads_list.head = temp;
+            tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.head;
+        }
+        else
+        {
+            tinyThread_suspended_threads_list.tail->next = temp;
+            temp->prev = tinyThread_suspended_threads_list.tail;
+            tinyThread_suspended_threads_list.tail = temp;
+        }
+        tinyThread_inactive_thread_count++;
     }
     else
     {
-        tinyThread_suspended_threads_list.tail->next = temp;
-        temp->prev = tinyThread_suspended_threads_list.tail;
-        tinyThread_suspended_threads_list.tail = temp;
+        err = TINYTHREADS_ERROR;
     }
-    tinyThread_inactive_thread_count++;
     return err;
 }
 /**************************************************************************
@@ -213,7 +223,7 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
 
 /**************************************************************************
  * Add a thread to the linked list
- * - Add the thread to the linked list
+ * - Add the thread to the ready linked list or non ready linked list
  * - Initialize the stack for the thread
  * - Initialize the PC for the thread to the thread function
  *   this is only valid on initilization, during execution the PC can be
@@ -224,7 +234,8 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
  *  accept a 32bit argument that can be used to pass messages in the form of
  * a pointer to a struct or literal number
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority)
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority,
+                                bool ready)
 {
 
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -244,13 +255,21 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t p
         tinyThread_thread_ctl[tinyThreads_thread_Count].notifyVal = NULL;
         tinyThread_thread_ctl[tinyThreads_thread_Count].sleep_count_ms = 0;
         tinyThread_thread_ctl[tinyThreads_thread_Count].notify_timeout_count = 0;
+        // TODO : this assumes static allocation of tcb
+        tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
+        if (ready)
+        {
+            tinyThread_ready_thread_add_ll(tinyThreads_thread_Count);
+        }
+        else
+        {
+            tinyThread_non_ready_thread_add_ll(tinyThreads_thread_Count);
+        }
 
-        tinyThread_tcb_ll_add(period);
         tt_ThreadStackInit(tinyThreads_thread_Count);
         // initialize PC , initial program counter just points to the thread.
         // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
-        tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
         id = tinyThreads_thread_Count;
         tinyThreads_thread_Count++;
     }
@@ -502,6 +521,34 @@ tinyThreadsTime_ms_t tt_ThreadGetNotifyToCount(tinyThread_tcb_idx id)
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
 {
     return tinyThread_current_tcb;
+}
+
+tinyThread_tcb *tt_ThreadGetTcbByID(tinyThread_tcb_idx id)
+{
+    // TOOD this assumes static allocation of tcb
+    if (tt_isValidTcb(id))
+    {
+        return &tinyThread_thread_ctl[id];
+    }
+    return NULL;
+}
+
+TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb)
+{
+    TinyThreadsStatus err = TINYTHREADS_OK;
+    if (tcb != NULL)
+    {
+
+        if (tt_isValidTcb(tcb->id))
+        {
+            tinyThread_current_tcb = tcb;
+        }
+        else
+        {
+            err = TINYTHREADS_ERROR;
+        }
+    }
+    return err;
 }
 
 static bool tt_isValidTcb(tinyThread_tcb_idx id)

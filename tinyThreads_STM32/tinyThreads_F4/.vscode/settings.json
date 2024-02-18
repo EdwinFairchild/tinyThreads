@@ -46,5 +46,6 @@
     },
     "windows": {
         "clang-format.executable": "< Windows clang-format path>"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
