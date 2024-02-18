@@ -4,7 +4,7 @@
 // TODO : save state of interrupts before entering cs and restore afterwards
 static uint32_t cs_nesting = 0;
 tinyThread_tcb *current_tcb = NULL;
-static void     systemThread(void)
+static void     systemThread(uint32_t arg)
 {
     static volatile uint32_t threadCount = 0;
     while (1)
