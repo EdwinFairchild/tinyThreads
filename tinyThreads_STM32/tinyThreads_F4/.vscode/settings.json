@@ -30,7 +30,8 @@
         "tinythreads_thread.h": "c",
         "thread": "c",
         "string.h": "c",
-        "core_cm4.h": "c"
+        "core_cm4.h": "c",
+        "tinythreads_memory.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.style": "file",

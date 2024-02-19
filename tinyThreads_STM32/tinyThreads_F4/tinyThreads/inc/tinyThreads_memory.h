@@ -1,6 +1,7 @@
 #ifndef TINYTHREADS_MEMORY_H
 #define TINYTHREADS_MEMORY_H
 
-// Your code goes here
+#include "tinyThreads_core.h"
+#include "tinyThreads_error.h"
 
 #endif // TINYTHREADS_MEMORY_H

@@ -116,8 +116,8 @@ void thread2(uint32_t notifyal)
 
 void thread3(uint32_t notifyVal)
 {
-    static uint32_t          counter = 0;
-    static volatile uint32_t newval = 0;
+    static uint32_t counter = 0;
+    static uint32_t newval = 0;
     while (1)
     {
 
