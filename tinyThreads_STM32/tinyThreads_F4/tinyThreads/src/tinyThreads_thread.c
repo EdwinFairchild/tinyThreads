@@ -144,7 +144,6 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
             nodeToremove = tinyThread_suspended_threads_list.head;
             // new head is the next node
             tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
-            err = TINYTHREADS_OK;
         }
         // handle if node to remove is tail
         else if (tinyThread_suspended_threads_list.tail->tcb->id == id)
@@ -153,11 +152,10 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
             nodeToremove = tinyThread_suspended_threads_list.tail;
             // new tail is the prev node
             tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.tail->prev;
-            err = TINYTHREADS_OK;
         }
+        // handle if node to remove is in the middle
         else
         {
-
             // Traverse the list to find the node
             while (temp != NULL && temp->tcb->id != id)
             {
@@ -169,7 +167,6 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
                 temp->prev->next = temp->next;
                 temp->next->prev = temp->prev;
                 nodeToremove = temp;
-                err = TINYTHREADS_OK;
             }
             else
             {
@@ -180,6 +177,7 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
         {
             free(nodeToremove);
             tinyThread_inactive_thread_count--;
+            err = TINYTHREADS_OK;
         }
     }
 
