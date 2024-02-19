@@ -4,14 +4,19 @@
 // TODO : save state of interrupts before entering cs and restore afterwards
 static uint32_t cs_nesting = 0;
 tinyThread_tcb *current_tcb = NULL;
-extern void     printNoneReadyList();
-static void     systemThread(uint32_t arg)
+uint32_t        sysThreadCount = 0;
+
+// TODO remove debuging
+extern void removeAllFromNoneReadyList();
+extern void printNoneReadyList();
+
+static void systemThread(uint32_t arg)
 {
     static volatile uint32_t threadCount = 0;
     while (1)
     {
-        threadCount++;
-        printNoneReadyList();
+        sysThreadCount++;
+
         // yield
         tt_ThreadYield(true);
     }
@@ -22,7 +27,7 @@ TinyThreadsStatus tt_CoreInit(void)
     // TODO : the err logic here is not correct, i think
     TinyThreadsStatus err = TINYTHREADS_OK;
     // add system related threads
-    tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, 10, 1, "Sys thread", true);
+    tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, 10, 1, (uint8_t *)"Sys thread", true);
     // os cannot function without system thread
     if (id >= 0)
     {

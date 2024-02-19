@@ -128,34 +128,31 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
  * This list only contains threads that are not ready to run
  * return : TinyThreadsStatus
  **************************************************************************/
-static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_idx id)
+static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
     // make new node
-    tinyThread_suspended_threads_node_t *temp =
-        (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
+    tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
+    tinyThread_suspended_threads_node_t *nodeToremove = NULL;
     if (temp != NULL && tinyThread_inactive_thread_count > 0)
     {
 
-        // check if this node is head and then remove and free
-        if (tinyThread_suspended_threads_list.head->tcb->id == id)
+        // handle if node to remove is head
+        if (temp->tcb->id == id)
         {
             // save the head pointer so we can free it
-            temp = tinyThread_suspended_threads_list.head;
+            nodeToremove = tinyThread_suspended_threads_list.head;
             // new head is the next node
             tinyThread_suspended_threads_list.head = tinyThread_suspended_threads_list.head->next;
-            // free the old head
-            free(temp);
             err = TINYTHREADS_OK;
         }
+        // handle if node to remove is tail
         else if (tinyThread_suspended_threads_list.tail->tcb->id == id)
         {
             // save the tail pointer
-            temp = tinyThread_suspended_threads_list.tail;
+            nodeToremove = tinyThread_suspended_threads_list.tail;
             // new tail is the prev node
             tinyThread_suspended_threads_list.tail = tinyThread_suspended_threads_list.tail->prev;
-            // free the old tail
-            free(temp);
             err = TINYTHREADS_OK;
         }
         else
@@ -172,7 +169,11 @@ static TinyThreadsStatus tinyThread_non_ready_thread_remove_ll(tinyThread_tcb_id
             free(temp);
             err = TINYTHREADS_OK;
         }
-        tinyThread_inactive_thread_count--;
+        if (nodeToremove != NULL)
+        {
+            free(nodeToremove);
+            tinyThread_inactive_thread_count--;
+        }
     }
 
     return err;
@@ -418,7 +419,7 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
                 // set state to ready
                 temp->tcb->state &= ~THREAD_STATE_SLEEPING;
                 // remove from non ready list
-                tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
+                tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
             }
             break;
         case THREAD_STATE_PAUSED:
@@ -442,7 +443,7 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
                 // set state to ready
                 temp->tcb->state &= ~THREAD_STATE_PENDING_NOTIFY;
                 // remove from non ready list
-                tinyThread_non_ready_thread_remove_ll(temp->tcb->id);
+                tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
             }
             break;
         }
@@ -476,7 +477,7 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
         // set sleep time to 0
         // tinyThread_thread_ctl[id].sleep_count_ms = 0;
         // remove from non ready list
-        err = tinyThread_non_ready_thread_remove_ll(id);
+        err = tinyThread_removeThreadFromNonReadyList(id);
         tt_CoreCsExit();
     }
     return err;
@@ -640,7 +641,7 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
                 if (tempTcb->state == THREAD_STATE_READY)
                 {
                     // remove from non ready list
-                    tinyThread_non_ready_thread_remove_ll(tempTcb->id);
+                    tinyThread_removeThreadFromNonReadyList(tempTcb->id);
                     // TODO : im preemptive scheduling we need to see if this new ready
                     //  task is higher priority and if so for a context switch. or maybe
                     //  let user decide of context switch should happen immediately or not?
@@ -666,6 +667,7 @@ uint32_t tt_ThreadGetInactiveThreadCount(void)
     return tinyThread_inactive_thread_count;
 }
 
+// TODO : remove debnugging helpers
 void printNoneReadyList()
 {
     tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
@@ -676,6 +678,16 @@ void printNoneReadyList()
     while (temp != NULL)
     {
         printf("Thread[%d][%s]\r\n", count++, temp->tcb->name);
+        temp = temp->next;
+    }
+}
+
+void removeAllFromNoneReadyList()
+{
+    tinyThread_suspended_threads_node_t *temp = tinyThread_suspended_threads_list.head;
+    while (temp != NULL)
+    {
+        tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
         temp = temp->next;
     }
 }
