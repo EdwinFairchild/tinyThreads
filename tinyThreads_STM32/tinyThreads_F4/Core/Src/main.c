@@ -116,8 +116,8 @@ void thread2(uint32_t notifyal)
 
 void thread3(uint32_t notifyVal)
 {
-    static uint32_t          counter = 0;
-    static volatile uint32_t newval = 0;
+    static uint32_t counter = 0;
+    static uint32_t newval = 0;
     while (1)
     {
 
@@ -173,7 +173,7 @@ int main(void)
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
     //  add user threads
-    printf("Start of application\r\n");
+    printf("Start of application %d\r\n", sizeof(tinyThread_tcb_t));
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {

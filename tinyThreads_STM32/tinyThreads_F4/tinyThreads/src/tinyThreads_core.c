@@ -12,7 +12,6 @@ extern void printNoneReadyList();
 
 static void systemThread(uint32_t arg)
 {
-    static volatile uint32_t threadCount = 0;
     while (1)
     {
         sysThreadCount++;
