@@ -9,11 +9,11 @@
 // Memory pool configuration - Application specific as needed
 #define CFG_MEM_POOL_LARGE_SIZE_BYTES  256
 #define CFG_MEM_POOL_MEDIUM_SIZE_BYTES 64
-#define CFG_MEM_POOL_SMALL_SIZE_BYTES  16
+#define CFG_MEM_POOL_SMALL_SIZE_BYTES  32
 // Define the number of blocks for each size
 #define CFG_MEM_POOLNUM_SMALL_BLOCKS  10
-#define CFG_MEM_POOLNUM_MEDIUM_BLOCKS 5
-#define CFG_MEM_POOLNUM_LARGE_BLOCKS  2
+#define CFG_MEM_POOLNUM_MEDIUM_BLOCKS 10
+#define CFG_MEM_POOLNUM_LARGE_BLOCKS  10
 
 /* ---------- Scheduling ----------*/
 #define CFG_TINYTASK_ROUND_ROBIN 1

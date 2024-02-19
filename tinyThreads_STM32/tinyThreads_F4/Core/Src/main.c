@@ -173,7 +173,7 @@ int main(void)
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
     //  add user threads
-    printf("Start of application\r\n");
+    printf("Start of application %d\r\n", sizeof(tinyThread_tcb_t));
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {

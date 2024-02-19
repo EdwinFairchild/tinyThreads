@@ -13,9 +13,9 @@ uint8_t large_alloc_flags[CFG_MEM_POOLNUM_LARGE_BLOCKS] = {0};
 // Function to allocate memory from the pool
 void *allocate_memory(size_t size)
 {
-    if (size <= SMALL_SIZE)
+    if (size <= CFG_MEM_POOL_SMALL_SIZE_BYTES)
     {
-        for (int i = 0; i < NUM_SMALL_BLOCKS; i++)
+        for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
         {
             if (!small_alloc_flags[i])
             {
@@ -24,9 +24,9 @@ void *allocate_memory(size_t size)
             }
         }
     }
-    else if (size <= MEDIUM_SIZE)
+    else if (size <= CFG_MEM_POOL_MEDIUM_SIZE_BYTES)
     {
-        for (int i = 0; i < NUM_MEDIUM_BLOCKS; i++)
+        for (int i = 0; i < CFG_MEM_POOLNUM_MEDIUM_BLOCKS; i++)
         {
             if (!medium_alloc_flags[i])
             {
@@ -35,9 +35,9 @@ void *allocate_memory(size_t size)
             }
         }
     }
-    else if (size <= LARGE_SIZE)
+    else if (size <= CFG_MEM_POOL_LARGE_SIZE_BYTES)
     {
-        for (int i = 0; i < NUM_LARGE_BLOCKS; i++)
+        for (int i = 0; i < CFG_MEM_POOLNUM_LARGE_BLOCKS; i++)
         {
             if (!large_alloc_flags[i])
             {
@@ -55,7 +55,7 @@ void *allocate_memory(size_t size)
 void free_memory(void *ptr)
 {
     // Check which pool the pointer belongs to and mark it as free
-    for (int i = 0; i < NUM_SMALL_BLOCKS; i++)
+    for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
     {
         if (ptr == small_pool[i])
         {
@@ -64,7 +64,7 @@ void free_memory(void *ptr)
         }
     }
 
-    for (int i = 0; i < NUM_MEDIUM_BLOCKS; i++)
+    for (int i = 0; i < CFG_MEM_POOLNUM_MEDIUM_BLOCKS; i++)
     {
         if (ptr == medium_pool[i])
         {
@@ -73,7 +73,7 @@ void free_memory(void *ptr)
         }
     }
 
-    for (int i = 0; i < NUM_LARGE_BLOCKS; i++)
+    for (int i = 0; i < CFG_MEM_POOLNUM_LARGE_BLOCKS; i++)
     {
         if (ptr == large_pool[i])
         {

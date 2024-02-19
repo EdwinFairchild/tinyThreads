@@ -3,6 +3,7 @@
 #include "tinyThreads_core.h"
 #include "tinyThreads_debug.h"
 #include "tinyThreads_error.h"
+#include "tinyThreads_memory.h"
 // TODO: remove Debugging-----------
 
 //---------------------
@@ -83,7 +84,7 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
 
     // make new node
     tinyThread_suspended_threads_node_t *temp =
-        (tinyThread_suspended_threads_node_t *)malloc(sizeof(tinyThread_suspended_threads_node_t));
+        (tinyThread_suspended_threads_node_t *)allocate_memory(sizeof(tinyThread_suspended_threads_node_t));
     if (temp != NULL)
     {
 
@@ -175,7 +176,7 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
         }
         if (nodeToremove != NULL)
         {
-            free(nodeToremove);
+            free_memory(nodeToremove);
             tinyThread_inactive_thread_count--;
             err = TINYTHREADS_OK;
         }
