@@ -84,7 +84,7 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
 
     // make new node
     tinyThread_suspended_threads_node_t *temp =
-        (tinyThread_suspended_threads_node_t *)allocate_memory(sizeof(tinyThread_suspended_threads_node_t));
+        (tinyThread_suspended_threads_node_t *)tt_MemoryAllocBuf(sizeof(tinyThread_suspended_threads_node_t));
     if (temp != NULL)
     {
 
@@ -176,7 +176,7 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
         }
         if (nodeToremove != NULL)
         {
-            free_memory(nodeToremove);
+            tt_MemoryFreeBuf(nodeToremove);
             tinyThread_inactive_thread_count--;
             err = TINYTHREADS_OK;
         }

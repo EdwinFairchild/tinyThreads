@@ -11,8 +11,9 @@ uint8_t medium_alloc_flags[CFG_MEM_POOLNUM_MEDIUM_BLOCKS] = {0};
 uint8_t large_alloc_flags[CFG_MEM_POOLNUM_LARGE_BLOCKS] = {0};
 
 // Function to allocate memory from the pool
-void *allocate_memory(size_t size)
+void *tt_MemoryAllocBuf(size_t size)
 {
+    void *retVal = NULL;
     if (size <= CFG_MEM_POOL_SMALL_SIZE_BYTES)
     {
         for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
@@ -20,7 +21,8 @@ void *allocate_memory(size_t size)
             if (!small_alloc_flags[i])
             {
                 small_alloc_flags[i] = 1; // Mark as allocated
-                return small_pool[i];
+                retVal = small_pool[i];
+                break;
             }
         }
     }
@@ -31,7 +33,8 @@ void *allocate_memory(size_t size)
             if (!medium_alloc_flags[i])
             {
                 medium_alloc_flags[i] = 1; // Mark as allocated
-                return medium_pool[i];
+                retVal = medium_pool[i];
+                break;
             }
         }
     }
@@ -42,17 +45,18 @@ void *allocate_memory(size_t size)
             if (!large_alloc_flags[i])
             {
                 large_alloc_flags[i] = 1; // Mark as allocated
-                return large_pool[i];
+                retVal = large_pool[i];
+                break;
             }
         }
     }
 
     // No available block
-    return NULL;
+    return retVal;
 }
 
 // Function to free allocated memory back to the pool
-void free_memory(void *ptr)
+void tt_MemoryFreeBuf(void *ptr)
 {
     // Check which pool the pointer belongs to and mark it as free
     for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
