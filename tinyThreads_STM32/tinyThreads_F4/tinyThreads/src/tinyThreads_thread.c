@@ -157,17 +157,24 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
         }
         else
         {
-            // find the node
-            temp = tinyThread_suspended_threads_list.head;
-            while (temp->tcb->id != id)
+
+            // Traverse the list to find the node
+            while (temp != NULL && temp->tcb->id != id)
             {
                 temp = temp->next;
             }
-            // remove the node
-            temp->prev->next = temp->next;
-            temp->next->prev = temp->prev;
-            free(temp);
-            err = TINYTHREADS_OK;
+            if (temp != NULL)
+            {
+                // remove the node by bypassing self
+                temp->prev->next = temp->next;
+                temp->next->prev = temp->prev;
+                nodeToremove = temp;
+                err = TINYTHREADS_OK;
+            }
+            else
+            {
+                err = TINYTHREADS_ERROR;
+            }
         }
         if (nodeToremove != NULL)
         {
