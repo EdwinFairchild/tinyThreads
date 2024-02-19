@@ -33,6 +33,7 @@ typedef struct tinyThread_tcb
     tinyThreadsTime_ms_t sleep_count_ms;       // sleep count in ms
     tinyThreadsTime_ms_t notify_timeout_count; // timeout counter
     tinyThread_tcb_idx   id;                   // Unique thread identifier
+    uint8_t              name[16];             // Name of the thread
 } tinyThread_tcb;
 
 /* Linkedlist for ready threads */

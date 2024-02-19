@@ -103,6 +103,7 @@ void thread1(uint32_t notifyVal)
         tt_ThreadSleep(1000);
     }
 }
+
 void thread2(uint32_t notifyal)
 {
     static uint32_t counter = 0;
@@ -112,6 +113,7 @@ void thread2(uint32_t notifyal)
         tt_ThreadSleep(1000);
     }
 }
+
 void thread3(uint32_t notifyVal)
 {
     static uint32_t          counter = 0;
@@ -125,6 +127,7 @@ void thread3(uint32_t notifyVal)
         //   tt_ThreadSleep(500);
     }
 }
+
 void EXTI15_10_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
@@ -174,9 +177,9 @@ int main(void)
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        thread2_id = tt_ThreadAdd(thread2, 10, 1, true);
-        thread3_id = tt_ThreadAdd(thread3, 10, 1, true);
-        thread1_id = tt_ThreadAdd(thread1, 10, 1, true);
+        thread2_id = tt_ThreadAdd(thread2, 10, 1, "thread 1", true);
+        thread3_id = tt_ThreadAdd(thread3, 10, 1, "thread 2", true);
+        thread1_id = tt_ThreadAdd(thread1, 10, 1, "thread 3", true);
         if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||
             thread3_id == TINYTHREADS_MAX_THREADS_REACHED)
         {

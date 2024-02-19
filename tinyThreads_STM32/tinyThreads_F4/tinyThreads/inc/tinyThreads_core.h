@@ -61,6 +61,11 @@ R0 (lowest address value) */
 #define TINYTASK_TCB_LAST_RUNTIME_OFFSET  16
 #define TINYTASK_TCB_TASK_PRIORITY_OFFSET 20
 #define TINYTASK_TCB_TASK_STATE_OFFSET    24
+#define TINYTASK_TCB_NOTIFY_VAL_OFFSET    28
+#define TINYTASK_TCB_SLEEP_COUNT_OFFSET   32
+#define TINYTASK_TCB_NOTIFY_TIMEOUT_COUNT 36
+#define TINYTASK_TCB_ID_OFFSET            40
+#define TINYTASK_TCB_NAME_OFFSET          44
 /*****************************************************************************
 ******************************************************************************/
 

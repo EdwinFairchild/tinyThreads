@@ -10,7 +10,7 @@
  *
  **************************************************************************/
 tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority,
-                                bool ready);
+                                uint8_t *name, bool ready);
 
 /**************************************************************************
  * TODO :
@@ -86,7 +86,7 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void);
  *
  *
  **************************************************************************/
-void tt_ThreadYield(void);
+void tt_ThreadYield(bool updateNext);
 
 /**************************************************************************
  * TODO :
