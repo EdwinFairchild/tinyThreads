@@ -15,7 +15,6 @@ static void systemThread(uint32_t arg)
     while (1)
     {
         sysThreadCount++;
-
         // yield
         tt_ThreadYield(true);
     }

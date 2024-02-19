@@ -58,31 +58,35 @@ void *tt_MemoryAllocBuf(size_t size)
 // Function to free allocated memory back to the pool
 void tt_MemoryFreeBuf(void *ptr)
 {
-    // Check which pool the pointer belongs to and mark it as free
-    for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
+    if (ptr != NULL)
     {
-        if (ptr == small_pool[i])
-        {
-            small_alloc_flags[i] = 0;
-            return;
-        }
-    }
 
-    for (int i = 0; i < CFG_MEM_POOLNUM_MEDIUM_BLOCKS; i++)
-    {
-        if (ptr == medium_pool[i])
+        // Check which pool the pointer belongs to and mark it as free
+        for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
         {
-            medium_alloc_flags[i] = 0;
-            return;
+            if (ptr == small_pool[i])
+            {
+                small_alloc_flags[i] = 0;
+                return;
+            }
         }
-    }
 
-    for (int i = 0; i < CFG_MEM_POOLNUM_LARGE_BLOCKS; i++)
-    {
-        if (ptr == large_pool[i])
+        for (int i = 0; i < CFG_MEM_POOLNUM_MEDIUM_BLOCKS; i++)
         {
-            large_alloc_flags[i] = 0;
-            return;
+            if (ptr == medium_pool[i])
+            {
+                medium_alloc_flags[i] = 0;
+                return;
+            }
+        }
+
+        for (int i = 0; i < CFG_MEM_POOLNUM_LARGE_BLOCKS; i++)
+        {
+            if (ptr == large_pool[i])
+            {
+                large_alloc_flags[i] = 0;
+                return;
+            }
         }
     }
 }

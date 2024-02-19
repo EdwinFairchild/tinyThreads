@@ -71,10 +71,11 @@ R0 (lowest address value) */
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyThread_tick;
-#define tt_tick_inc()           (++tinyThread_tick)
-#define tinyThread_tick_reset() (tinyThread_tick = 0)
-#define tinyThread_tick_get()   (tinyThread_tick)
-
+#define tt_tick_inc()                                     (++tinyThread_tick)
+#define tinyThread_tick_reset()                           (tinyThread_tick = 0)
+#define tinyThread_tick_get()                             (tinyThread_tick)
+#define tinyThread_tick_getElapsedMs(tick)                (tinyThread_tick_get() - tick)
+#define tinyThread_tick_getApproxJitterMs(tick, expected) (tinyThread_tick_getElapsedMs(tick) - expected)
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_CoreRun(void);
 void              tt_CoreSystemTickHandler(void);
