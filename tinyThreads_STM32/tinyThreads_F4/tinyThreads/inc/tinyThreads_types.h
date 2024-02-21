@@ -3,6 +3,7 @@
 
 #include "stdbool.h"
 #include "stdint.h"
+#include "tinyThreads_config.h"
 #include "tinyThreads_error.h"
 
 typedef uint32_t tinyThreadsTime_ms_t;
@@ -22,18 +23,19 @@ typedef struct tinyThread_tcb tinyThread_tcb_t;
 typedef struct tinyThread_tcb
 {
     /*!!!!!!! Dont change order of this without updating core.h offsets */
-    uint32_t            *stackPointer;         // Pointer to the current stack pointer
-    tinyThread_tcb_t    *next;                 // Pointer to the next thread
-    tinyThread_tcb_t    *prev;                 // Pointer to the previous thread
-    tinyThreadPeriod_t   period_ms;            // Period of the thread
-    tinyThreadsTime_ms_t lastRunTime;          // Last time the thread ran
-    tinyThreadPriority_t priority;             // Priority of the thread
-    tinyThread_state     state;                // State of the thread
-    uint32_t            *notifyVal;            // Value to be passed during notification
-    tinyThreadsTime_ms_t sleep_count_ms;       // sleep count in ms
-    tinyThreadsTime_ms_t notify_timeout_count; // timeout counter
-    tinyThread_tcb_idx   id;                   // Unique thread identifier
-    uint8_t              name[16];             // Name of the thread
+    uint32_t            *stackPointer;                          // Pointer to the current stack pointer
+    tinyThread_tcb_t    *next;                                  // Pointer to the next thread
+    tinyThread_tcb_t    *prev;                                  // Pointer to the previous thread
+    tinyThreadPeriod_t   period_ms;                             // Period of the thread
+    tinyThreadsTime_ms_t lastRunTime;                           // Last time the thread ran
+    tinyThreadPriority_t priority;                              // Priority of the thread
+    tinyThread_state     state;                                 // State of the thread
+    uint32_t            *notifyVal;                             // Value to be passed during notification
+    bool                 notifyConsumed;                        // Notification pending flag
+    tinyThreadsTime_ms_t sleep_count_ms;                        // sleep count in ms
+    tinyThreadsTime_ms_t notify_timeout_count;                  // timeout counter
+    tinyThread_tcb_idx   id;                                    // Unique thread identifier
+    uint8_t              name[CFG_TINYTHREADS_MAX_NAME_LENGTH]; // Name of the thread
 } tinyThread_tcb;
 
 /* Linkedlist for ready threads */

@@ -3,6 +3,7 @@
 
 #include "stdarg.h"
 #include "stdbool.h"
+#include "stddef.h"
 #include "stdint.h"
 #include "stdio.h"
 #include "string.h"
@@ -56,18 +57,19 @@ R0 (lowest address value) */
 *****************| TintyThread control block member offsets |******************
 ******************************************************************************/
 // This is to not use magic numbers in the assembly code
-#define TINYTASK_TCB_SP_OFFSET            0
-#define TINYTASK_TCB_NEXT_PTR_OFFSET      4
-#define TINYTASK_TCB_PREV_PTR_OFFSET      8
-#define TINYTASK_TCB_PERIOD_OFFSET        12
-#define TINYTASK_TCB_LAST_RUNTIME_OFFSET  16
-#define TINYTASK_TCB_TASK_PRIORITY_OFFSET 20
-#define TINYTASK_TCB_TASK_STATE_OFFSET    24
-#define TINYTASK_TCB_NOTIFY_VAL_OFFSET    28
-#define TINYTASK_TCB_SLEEP_COUNT_OFFSET   32
-#define TINYTASK_TCB_NOTIFY_TIMEOUT_COUNT 36
-#define TINYTASK_TCB_ID_OFFSET            40
-#define TINYTASK_TCB_NAME_OFFSET          44
+#define TINYTASK_TCB_SP_OFFSET              ((size_t)offsetof(tinyThread_tcb, stackPointer))
+#define TINYTASK_TCB_NEXT_PTR_OFFSET        ((size_t)offsetof(tinyThread_tcb, next))
+#define TINYTASK_TCB_PREV_PTR_OFFSET        ((size_t)offsetof(tinyThread_tcb, prev))
+#define TINYTASK_TCB_PERIOD_OFFSET          ((size_t)offsetof(tinyThread_tcb, period_ms))
+#define TINYTASK_TCB_LAST_RUNTIME_OFFSET    ((size_t)offsetof(tinyThread_tcb, lastRunTime))
+#define TINYTASK_TCB_TASK_PRIORITY_OFFSET   ((size_t)offsetof(tinyThread_tcb, priority))
+#define TINYTASK_TCB_TASK_STATE_OFFSET      ((size_t)offsetof(tinyThread_tcb, state))
+#define TINYTASK_TCB_NOTIFY_VAL_OFFSET      ((size_t)offsetof(tinyThread_tcb, notifyVal))
+#define TINYTASK_TCB_NOTIFY_CONSUMED_OFFSET ((size_t)offsetof(tinyThread_tcb, notifyConsumed))
+#define TINYTASK_TCB_SLEEP_COUNT_OFFSET     ((size_t)offsetof(tinyThread_tcb, sleep_count_ms))
+#define TINYTASK_TCB_NOTIFY_TIMEOUT_COUNT   ((size_t)offsetof(tinyThread_tcb, notify_timeout_count))
+#define TINYTASK_TCB_ID_OFFSET              ((size_t)offsetof(tinyThread_tcb, id))
+#define TINYTASK_TCB_NAME_OFFSET            ((size_t)offsetof(tinyThread_tcb, name))
 /*****************************************************************************
 ******************************************************************************/
 

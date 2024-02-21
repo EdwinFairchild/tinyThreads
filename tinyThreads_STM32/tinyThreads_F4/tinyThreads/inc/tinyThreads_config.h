@@ -5,6 +5,7 @@
 #define CFG_SYSTEM_CLOCK                  80
 #define CFG_TINYTHREADS_NUMBER_OF_THREADS 4
 #define CFG_TINYTHREADS_STACK_SIZE        1000
+#define CFG_TINYTHREADS_MAX_NAME_LENGTH   16
 
 // Memory pool configuration - Application specific as needed
 #define CFG_MEM_POOL_LARGE_SIZE_BYTES  256
