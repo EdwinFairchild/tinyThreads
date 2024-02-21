@@ -108,6 +108,9 @@ void tt_CoreSystemTickHandler(void)
         tt_ThreadUpdateInactive();
     }
 
+    // update timers
+    tt_TimerUpdate();
+
     // this should be shecked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
     if (current_tcb->period_ms <= (tinyThread_tick_get() - current_tcb->lastRunTime))

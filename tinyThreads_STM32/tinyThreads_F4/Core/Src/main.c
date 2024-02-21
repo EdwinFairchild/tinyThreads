@@ -32,8 +32,10 @@
 #include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
 #include "tinyThreads_thread.h"
+#include "tinyThreads_timers.h"
 #include "tinyThreads_types.h"
 #include <sys/unistd.h> // For STDOUT_FILENO, STDERR_FILENO
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +59,12 @@
 tinyThread_tcb_idx   thread1_id, thread2_id, thread3_id;
 static uint32_t      notifyCounter = 0;
 tinyThreadsTime_ms_t previousTime = 0;
+
+void myTimerCallback(void)
+{
+    printf("Timer callback\r\n");
+}
+tinyThread_timer_t mytimer = {TIMER_TYPE_PERIODIC, 3000, 3000, myTimerCallback, false};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,7 +139,7 @@ void thread3(uint32_t notifyVal)
 
         printf("notifyVal: %d\r\n", (int)newval);
         // print elapsed time
-        printf("Elapsed time: %d:%d\r\n", (int)tinyThread_tick_getElapsedMs(previousTime),
+        printf("Elapsed time: %d:%ld\r\n", (int)tinyThread_tick_getElapsedMs(previousTime),
                tinyThread_tick_getApproxJitterMs(previousTime, 5000));
         previousTime = tinyThread_tick_get();
         //   tt_ThreadSleep(500);
@@ -156,10 +164,12 @@ void EXTI15_10_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
     tinyThreadsTime_ms_t currentTime = tinyThread_tick_get();
+
     if (currentTime - previousTime > 400)
     {
         previousTime = currentTime;
         tt_ThreadNotify(thread3_id, notifyCounter++, true);
+        tt_TimerStart(&mytimer);
     }
 
     /* USER CODE END EXTI15_10_IRQn 1 */
@@ -201,9 +211,9 @@ int main(void)
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        thread1_id = tt_ThreadAdd(thread1, 10, 1, (uint8_t *)"thread 3", true);
-        thread2_id = tt_ThreadAdd(thread2, 10, 1, (uint8_t *)"thread 1", true);
-        thread3_id = tt_ThreadAdd(thread3, 10, 1, (uint8_t *)"thread 2", true);
+        thread1_id = tt_ThreadAdd(thread1, 10, 1, (uint8_t *)"thread 1", true);
+        thread2_id = tt_ThreadAdd(thread2, 10, 1, (uint8_t *)"thread 2", true);
+        thread3_id = tt_ThreadAdd(thread3, 2000, 1, (uint8_t *)"thread 3", true);
         thread1_id = tt_ThreadAdd(thread4, 10, 1, (uint8_t *)"LED thread", true);
 
         if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||
