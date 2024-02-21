@@ -1,6 +1,5 @@
 #include "tinyThreads_port.h"
 #include "tinyThreads_core.h"
-#include "tinyThreads_debug.h"
 
 void tinyThread_port_enable_tick_timer(void)
 {

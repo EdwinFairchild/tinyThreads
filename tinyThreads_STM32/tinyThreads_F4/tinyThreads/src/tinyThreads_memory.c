@@ -1,5 +1,5 @@
 #include "tinyThreads_memory.h"
-
+#include "tinyThreads_core.h"
 // Memory pools for each size
 uint8_t small_pool[CFG_MEM_POOLNUM_SMALL_BLOCKS][CFG_MEM_POOL_SMALL_SIZE_BYTES];
 uint8_t medium_pool[CFG_MEM_POOLNUM_MEDIUM_BLOCKS][CFG_MEM_POOL_MEDIUM_SIZE_BYTES];
@@ -13,6 +13,8 @@ uint8_t large_alloc_flags[CFG_MEM_POOLNUM_LARGE_BLOCKS] = {0};
 // Function to allocate memory from the pool
 void *tt_MemoryAllocBuf(size_t size)
 {
+
+    // TODO : save pointer to next available block to avoid searching from the beginning
     void *retVal = NULL;
     if (size <= CFG_MEM_POOL_SMALL_SIZE_BYTES)
     {

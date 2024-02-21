@@ -1,9 +1,6 @@
 #include "tinyThreads_thread.h"
-#include "tinyThreads_config.h"
 #include "tinyThreads_core.h"
-#include "tinyThreads_debug.h"
-#include "tinyThreads_error.h"
-#include "tinyThreads_memory.h"
+
 // TODO: remove Debugging-----------
 
 //---------------------

@@ -10,9 +10,11 @@
 #include "tinyThreads_config.h"
 #include "tinyThreads_debug.h"
 #include "tinyThreads_error.h"
+#include "tinyThreads_memory.h"
 #include "tinyThreads_port.h"
 #include "tinyThreads_system.h"
 #include "tinyThreads_thread.h"
+#include "tinyThreads_timers.h"
 #include "tinyThreads_types.h"
 
 #include "stdlib.h"
@@ -71,10 +73,12 @@ R0 (lowest address value) */
 
 /***************| system tick macros |**********************/
 extern uint32_t tinyThread_tick;
-#define tt_tick_inc()                                     (++tinyThread_tick)
-#define tinyThread_tick_reset()                           (tinyThread_tick = 0)
-#define tinyThread_tick_get()                             (tinyThread_tick)
-#define tinyThread_tick_getElapsedMs(tick)                (tinyThread_tick_get() - tick)
+#define tt_tick_inc()           (++tinyThread_tick)
+#define tinyThread_tick_reset() (tinyThread_tick = 0)
+#define tinyThread_tick_get()   (tinyThread_tick)
+// TODO: This is not accurate, it should be the time since the last tick ?
+#define tinyThread_tick_getElapsedMs(tick) (tinyThread_tick_get() - tick)
+// TODO this is negative if called frequently, maybe ebcause tick has not been incremented
 #define tinyThread_tick_getApproxJitterMs(tick, expected) (tinyThread_tick_getElapsedMs(tick) - expected)
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_CoreRun(void);

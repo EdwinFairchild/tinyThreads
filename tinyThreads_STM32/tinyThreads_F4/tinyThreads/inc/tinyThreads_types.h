@@ -66,4 +66,34 @@ typedef struct
 
 } tinyThread_suspended_threads_list_t;
 
+// ----------| Software Timers |---------//
+
+typedef enum tinyThread_timer_mode
+{
+    TIMER_TYPE_SINGLE_SHOT,
+    TIMER_TYPE_PERIODIC
+} tinyThread_timer_mode_t;
+
+typedef struct tinyThread_timer
+{
+    tinyThread_timer_mode_t timerMode;
+    tinyThreadsTime_ms_t    countDown;
+    tinyThreadsTime_ms_t    period;
+    void (*callback)(void);
+    bool active;
+} tinyThread_timer_t;
+
+typedef struct tinyThread_timer_node
+{
+    tinyThread_timer_t           *timer;
+    struct tinyThread_timer_node *next;
+    struct tinyThread_timer_node *prev;
+} tinyThread_timer_node_t;
+
+typedef struct
+{
+    tinyThread_timer_node_t *head;
+    tinyThread_timer_node_t *tail;
+} tinyThread_ready_timers_list_t;
+
 #endif // TINYTHREADS_TYPES_H
