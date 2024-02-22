@@ -4,12 +4,6 @@
 // TODO: remove Debugging-----------
 
 //---------------------
-
-/* Reserve stack space, include user thread space and system thread space */
-// TODO : shoould I make a seprate system stack space ? If not , user musct know system will use some of
-// their stack , so do not calcualte stack on their threads alone.
-uint32_t tinyThread_stack[TT_MAX_THREADS][TT_TOTAL_STACK_SIZE];
-
 /* Static allocation of Thread Control Block Array*/
 // TODO : make user allocate their TCBs in RAM
 // it will be laste wasteful than me allocating TT_MAX_THREADS amount
@@ -210,34 +204,41 @@ static TinyThreadsStatus tinyThread_canAddThread(void)
  * stacks are in decending order
  * this is why we set the stack pointer to the last element of the stack
  ***************************************************************************/
-static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, void (*thread)(uint32_t))
+static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, uint32_t *stackPtr, uint32_t stacksize,
+                                            void (*thread)(uint32_t))
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
+    if (stackPtr != NULL && stacksize != 0 && thread != NULL && threadIDX < TT_MAX_THREADS)
+    {
+        /*  initialize the stack pointer
+            R13 is stack pointer, we manages the register manually using the stack pointer blow */
+        tinyThread_thread_ctl[threadIDX].stackPointer = (uint32_t *)&stackPtr[stacksize - 16];
+        tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
+        stackPtr[TT_EXCEPTION_FRAME_PC(stacksize)] = (uint32_t)thread;
+        stackPtr[TT_EXCEPTION_FRAME_PSR(stacksize)] |= (1 << 24); // xPSR --------
+        /*  The PC get initialized in tt_ThreadAdd                               |
+        tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
+        stackPtr[TT_EXCEPTION_FRAME_LR(stacksize)] = 0xe2345678;  // R14 (LR)    |
+        stackPtr[TT_EXCEPTION_FRAME_R12(stacksize)] = 0x12345678; // R12         |
+        stackPtr[TT_EXCEPTION_FRAME_R3(stacksize)] = 0x22345678;  // R3          ---- Exception frame
+        stackPtr[TT_EXCEPTION_FRAME_R2(stacksize)] = 0x32345678;  // R2          |
+        stackPtr[TT_EXCEPTION_FRAME_R1(stacksize)] = 0x42345678;  // R1          |
+        stackPtr[TT_EXCEPTION_FRAME_R0(stacksize)] = 0x52345678;  // R0 ----------
 
-    /*  initialize the stack pointer
-        R13 is stack pointer, we manages the register manually using the stack pointer blow */
-    tinyThread_thread_ctl[threadIDX].stackPointer = &tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 16];
-    tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
-    tinyThread_stack[tinyThreads_thread_Count][TT_EXCEPTION_FRAME_PC] = (uint32_t)thread;
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_PSR] |= (1 << 24); // xPSR --------
-    /*  The PC get initialized in tt_ThreadAdd                               |
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_LR] = 0xe2345678;  // R14 (LR)    |
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R12] = 0x12345678; // R12         |
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R3] = 0x22345678;  // R3          ---- Exception frame
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R2] = 0x32345678;  // R2          |
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R1] = 0x42345678;  // R1          |
-    tinyThread_stack[threadIDX][TT_EXCEPTION_FRAME_R0] = 0x52345678;  // R0 ----------
-
-    // R4-R11 are general purpose registers that are optional to save
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 9] = 0x62345678;  // R11
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 10] = 0x72345678; // R10
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 11] = 0x82345678; // R9
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 12] = 0x92345678; // R8
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 13] = 0xa2345678; // R7
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 14] = 0xb2345678; // R6
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 15] = 0xc2345678; // R5
-    tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 16] = 0xd2345678; // R4
+        // R4-R11 are general purpose registers that are optional to save
+        stackPtr[stacksize - 9] = 0x62345678;  // R11
+        stackPtr[stacksize - 10] = 0x72345678; // R10
+        stackPtr[stacksize - 11] = 0x82345678; // R9
+        stackPtr[stacksize - 12] = 0x92345678; // R8
+        stackPtr[stacksize - 13] = 0xa2345678; // R7
+        stackPtr[stacksize - 14] = 0xb2345678; // R6
+        stackPtr[stacksize - 15] = 0xc2345678; // R5
+        stackPtr[stacksize - 16] = 0xd2345678; // R4
+    }
+    else
+    {
+        err = TINYTHREADS_ERROR;
+    }
     debug(err);
     return err;
 }
@@ -255,8 +256,8 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, void (*thread)(u
  *  accept a 32bit argument that can be used to pass messages in the form of
  * a pointer to a struct or literal number
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority,
-                                uint8_t *name, bool ready)
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, uint32_t stackSize,
+                                tinyThreadsTime_ms_t period, tinyThreadPriority_t priority, uint8_t *name, bool ready)
 {
 
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -289,7 +290,7 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t p
             tinyThread_addThreadToNonReadyList(tinyThreads_thread_Count);
         }
 
-        tt_ThreadStackInit(tinyThreads_thread_Count, thread);
+        tt_ThreadStackInit(tinyThreads_thread_Count, stackPtr, stackSize, thread);
         // initialize PC , initial program counter just points to the thread.
         // However during context switching  we will push the PC (which will vary) to the stack
         // and pop it off when we want to return to the thread at its proper place
@@ -560,7 +561,7 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
 
         tinyThread_tcb_t *tempTcb = &tinyThread_thread_ctl[taskID];
         // write the data if overwrite is true or if data has been consumed
-        if (overwrite || tempTcb->notifyVal == true)
+        if (overwrite || tempTcb->notifyConsumed == true)
         {
             *(tempTcb->notifyVal) = newVal;
 

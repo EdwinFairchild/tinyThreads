@@ -10,6 +10,8 @@ uint32_t        sysThreadCount = 0;
 extern void removeAllFromNoneReadyList();
 extern void printNoneReadyList();
 
+uint32_t systemThreadStack[200];
+
 static void systemThread(uint32_t arg)
 {
     while (1)
@@ -25,7 +27,7 @@ TinyThreadsStatus tt_CoreInit(void)
     // TODO : the err logic here is not correct, i think
     TinyThreadsStatus err = TINYTHREADS_OK;
     // add system related threads
-    tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, 10, 1, (uint8_t *)"Sys thread", true);
+    tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, systemThreadStack, 200, 10, 1, (uint8_t *)"Sys thread", true);
     // os cannot function without system thread
     if (id >= 0)
     {

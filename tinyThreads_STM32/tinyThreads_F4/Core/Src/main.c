@@ -60,6 +60,15 @@ tinyThread_tcb_idx   thread1_id, thread2_id, thread3_id;
 static uint32_t      notifyCounter = 0;
 tinyThreadsTime_ms_t previousTime = 0;
 
+// thread 1 stack
+uint32_t thread1_stack[200];
+// thread 2 stack
+uint32_t thread2_stack[200];
+// thread 3 stack
+uint32_t thread3_stack[200];
+// thread 4 stack
+uint32_t thread4_stack[200];
+
 void myTimerCallback(void)
 {
     printf("Timer callback\r\n");
@@ -211,10 +220,14 @@ int main(void)
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
-        thread1_id = tt_ThreadAdd(thread1, 10, 1, (uint8_t *)"thread 1", true);
-        thread2_id = tt_ThreadAdd(thread2, 10, 1, (uint8_t *)"thread 2", true);
-        thread3_id = tt_ThreadAdd(thread3, 2000, 1, (uint8_t *)"thread 3", true);
-        thread1_id = tt_ThreadAdd(thread4, 10, 1, (uint8_t *)"LED thread", true);
+        thread1_id =
+            tt_ThreadAdd(thread1, thread1_stack, sizeof(thread1_stack) / 4, 10, 1, (uint8_t *)"thread 1", true);
+        thread2_id =
+            tt_ThreadAdd(thread2, thread2_stack, sizeof(thread2_stack) / 4, 10, 1, (uint8_t *)"thread 2", true);
+        thread3_id =
+            tt_ThreadAdd(thread3, thread3_stack, sizeof(thread3_stack) / 4, 10, 1, (uint8_t *)"thread 3", true);
+        thread1_id =
+            tt_ThreadAdd(thread4, thread4_stack, sizeof(thread4_stack) / 4, 10, 1, (uint8_t *)"LED thread", true);
 
         if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||
             thread3_id == TINYTHREADS_MAX_THREADS_REACHED)

@@ -9,8 +9,8 @@
  *
  *
  **************************************************************************/
-tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t period, tinyThreadPriority_t priority,
-                                uint8_t *name, bool ready);
+tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, uint32_t stackSize,
+                                tinyThreadsTime_ms_t period, tinyThreadPriority_t priority, uint8_t *name, bool ready);
 
 /**************************************************************************
  * TODO :

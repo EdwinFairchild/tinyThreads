@@ -42,16 +42,16 @@ R2
 R1
 R0 (lowest address value) */
 
-#define TT_TOTAL_STACK_SIZE    (TT_MAX_THREADS * CFG_TINYTHREADS_STACK_SIZE)
-#define TT_TOP_OF_STACK        (CFG_TINYTHREADS_STACK_SIZE - 1U)
-#define TT_EXCEPTION_FRAME_PSR TT_TOP_OF_STACK
-#define TT_EXCEPTION_FRAME_PC  (TT_TOP_OF_STACK - 1U)
-#define TT_EXCEPTION_FRAME_LR  (TT_TOP_OF_STACK - 2U)
-#define TT_EXCEPTION_FRAME_R12 (TT_TOP_OF_STACK - 3U)
-#define TT_EXCEPTION_FRAME_R3  (TT_TOP_OF_STACK - 4U)
-#define TT_EXCEPTION_FRAME_R2  (TT_TOP_OF_STACK - 5U)
-#define TT_EXCEPTION_FRAME_R1  (TT_TOP_OF_STACK - 6U)
-#define TT_EXCEPTION_FRAME_R0  (TT_TOP_OF_STACK - 7U)
+#define TT_TOTAL_STACK_SIZE               (TT_MAX_THREADS * CFG_TINYTHREADS_STACK_SIZE)
+#define TT_TOP_OF_STACK(stacksize)        (stacksize - 1U)
+#define TT_EXCEPTION_FRAME_PSR(stacksize) TT_TOP_OF_STACK(stacksize)
+#define TT_EXCEPTION_FRAME_PC(stacksize)  (TT_TOP_OF_STACK(stacksize) - 1U)
+#define TT_EXCEPTION_FRAME_LR(stacksize)  (TT_TOP_OF_STACK(stacksize) - 2U)
+#define TT_EXCEPTION_FRAME_R12(stacksize) (TT_TOP_OF_STACK(stacksize) - 3U)
+#define TT_EXCEPTION_FRAME_R3(stacksize)  (TT_TOP_OF_STACK(stacksize) - 4U)
+#define TT_EXCEPTION_FRAME_R2(stacksize)  (TT_TOP_OF_STACK(stacksize) - 5U)
+#define TT_EXCEPTION_FRAME_R1(stacksize)  (TT_TOP_OF_STACK(stacksize) - 6U)
+#define TT_EXCEPTION_FRAME_R0(stacksize)  (TT_TOP_OF_STACK(stacksize) - 7U)
 
 /******************************************************************************
 *****************| TintyThread control block member offsets |******************
