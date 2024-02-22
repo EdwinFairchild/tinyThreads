@@ -78,7 +78,7 @@ static TinyThreadsStatus tinyThread_ready_thread_add_ll(tinyThread_tcb_idx id)
 static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
-
+    tt_CoreCsEnter();
     // make new node
     tinyThread_suspended_threads_node_t *temp =
         (tinyThread_suspended_threads_node_t *)tt_MemoryAllocBuf(sizeof(tinyThread_suspended_threads_node_t));
@@ -119,6 +119,7 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
     {
         err = TINYTHREADS_ERROR;
     }
+    tt_CoreCsExit();
     return err;
 }
 /**************************************************************************
@@ -582,12 +583,14 @@ static bool tt_isValidTcb(tinyThread_tcb_idx id)
 
 TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *val)
 {
-    tt_CoreCsEnter();
+
     TinyThreadsStatus err = TINYTHREADS_OK;
     tinyThread_tcb_t *tempTcb = tinyThread_current_tcb;
 
+    // at this point we have not received anything so set notifyConsumed to false
+    tempTcb->notifyConsumed = false;
     // if there is a timeout and there is no data then put the thread in non ready list
-    if (timeout && tempTcb->notifyVal == NULL)
+    if (timeout || tempTcb->notifyConsumed == false)
     {
         // set notify value to point to the value passed in
         tempTcb->notifyVal = val;
@@ -598,7 +601,6 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
         // add to non ready list
         tinyThread_addThreadToNonReadyList(tempTcb->id);
         // yield
-        tt_CoreCsExit();
         tt_ThreadYield(true);
         // thread will return here after timeout or notification
     }
@@ -610,8 +612,7 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
     {
         // read the value
         *val = *(tempTcb->notifyVal);
-        // set value to null
-        tempTcb->notifyVal = NULL;
+        tempTcb->notifyConsumed = true;
     }
     tt_CoreCsExit();
     return err;
@@ -625,8 +626,8 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
     {
 
         tinyThread_tcb_t *tempTcb = &tinyThread_thread_ctl[taskID];
-        // write the data if overwrite is true or if there is no data
-        if (overwrite || tempTcb->notifyVal == NULL)
+        // write the data if overwrite is true or if data has been consumed
+        if (overwrite || tempTcb->notifyVal == true)
         {
             *(tempTcb->notifyVal) = newVal;
 

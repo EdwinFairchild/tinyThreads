@@ -64,7 +64,7 @@ void myTimerCallback(void)
 {
     printf("Timer callback\r\n");
 }
-tinyThread_timer_t mytimer = {TIMER_TYPE_PERIODIC, 3000, 3000, myTimerCallback, false};
+tinyThread_timer_t mytimer = {TIMER_TYPE_SINGLE_SHOT, 3000, 3000, myTimerCallback, false};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

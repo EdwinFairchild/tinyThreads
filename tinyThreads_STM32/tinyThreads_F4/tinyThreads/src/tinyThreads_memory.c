@@ -13,7 +13,7 @@ uint8_t large_alloc_flags[CFG_MEM_POOLNUM_LARGE_BLOCKS] = {0};
 // Function to allocate memory from the pool
 void *tt_MemoryAllocBuf(size_t size)
 {
-
+    tt_CoreCsEnter();
     // TODO : save pointer to next available block to avoid searching from the beginning
     void *retVal = NULL;
     if (size <= CFG_MEM_POOL_SMALL_SIZE_BYTES)
@@ -52,8 +52,8 @@ void *tt_MemoryAllocBuf(size_t size)
             }
         }
     }
+    tt_CoreCsExit();
 
-    // No available block
     return retVal;
 }
 
@@ -62,13 +62,14 @@ void tt_MemoryFreeBuf(void *ptr)
 {
     if (ptr != NULL)
     {
-
+        tt_CoreCsEnter();
         // Check which pool the pointer belongs to and mark it as free
         for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
         {
             if (ptr == small_pool[i])
             {
                 small_alloc_flags[i] = 0;
+                tt_CoreCsExit();
                 return;
             }
         }
@@ -78,6 +79,7 @@ void tt_MemoryFreeBuf(void *ptr)
             if (ptr == medium_pool[i])
             {
                 medium_alloc_flags[i] = 0;
+                tt_CoreCsExit();
                 return;
             }
         }
@@ -87,6 +89,7 @@ void tt_MemoryFreeBuf(void *ptr)
             if (ptr == large_pool[i])
             {
                 large_alloc_flags[i] = 0;
+                tt_CoreCsExit();
                 return;
             }
         }
