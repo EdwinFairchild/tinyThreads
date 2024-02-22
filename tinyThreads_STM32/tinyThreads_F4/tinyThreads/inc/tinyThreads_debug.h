@@ -6,6 +6,7 @@
 #include "tinyThreads_port.h"
 
 // TODO: Makes the assumption user has retargeted printf to UART
+// provide a print wrapper via tinyThreads_port.h
 // clang-format off
 // Debug macro definition
 #if defined(CFG_TINYTHREADS_DEBUG) && (CFG_TINYTHREADS_DEBUG == 1)
