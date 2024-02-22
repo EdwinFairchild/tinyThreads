@@ -5,7 +5,17 @@
 #include "tinyThreads_types.h"
 
 /**************************************************************************
- * TODO :
+ * Add a thread to the scheduler
+ * @param thread - function pointer to the thread
+ * @param stackPtr - pointer to the stack
+ * @param stackSize - size of the stack
+ * @param period - period of the thread
+ * @param priority - priority of the thread
+ * @param name - name of the thread
+ * @param ready - if the thread is ready to run
+ * @return tinyThread_tcb_idx - index of the thread
+ * @return -1 - if the thread could not be added
+ * @return -2 - if the priority is invalid
  *
  *
  **************************************************************************/

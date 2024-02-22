@@ -265,6 +265,7 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, ui
     tinyThread_tcb_idx id = 0;
     /* disable interrupts */
     tt_CoreCsEnter();
+    // TODO : check all params are within configured limts and return propper errors
     if (tinyThread_canAddThread() == TINYTHREADS_OK && thread != NULL)
     {
         // intiialize thread control block
