@@ -127,7 +127,7 @@ void tt_CoreCsEnter(void)
     // only need to do this once
     if (cs_nesting == 0)
     {
-        __disable_irq();
+        TT_DISABLE_INTERRUPTS();
     }
     cs_nesting++;
 }
@@ -136,6 +136,6 @@ void tt_CoreCsExit(void)
     cs_nesting--;
     if (cs_nesting == 0)
     {
-        __enable_irq();
+        TT_ENABLE_INTERRUPTS();
     }
 }
