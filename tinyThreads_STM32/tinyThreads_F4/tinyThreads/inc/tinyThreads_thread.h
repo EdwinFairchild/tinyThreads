@@ -58,7 +58,7 @@ tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id);
  *
  *
  **************************************************************************/
-tinyThreadsTime_ms_t tt_ThreadGetNotifyToCount(tinyThread_tcb_idx id);
+tinyThreadsTime_ms_t tt_ThreadGetNotifyTimeoutCount(tinyThread_tcb_idx id);
 
 /**************************************************************************
  * TODO :

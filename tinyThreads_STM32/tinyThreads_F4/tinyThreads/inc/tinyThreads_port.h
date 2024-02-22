@@ -12,6 +12,8 @@
 #define TT_DISABLE_INTERRUPTS() __disable_irq()
 #define TT_ENABLE_INTERRUPTS() __enable_irq()
 
+#define TT_ASM_BREAKPOINT() asm volatile("bkpt #0")
+
 // clang-format on
 void tinyThread_port_enable_tick_timer(void);
 void tinyThreads_enable_context_switching_isr(void);

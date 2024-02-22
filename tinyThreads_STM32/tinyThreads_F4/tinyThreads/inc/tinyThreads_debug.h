@@ -6,14 +6,19 @@
 #include "tinyThreads_port.h"
 
 // TODO: Makes the assumption user has retargeted printf to UART
+// clang-format off
 // Debug macro definition
 #if defined(CFG_TINYTHREADS_DEBUG) && (CFG_TINYTHREADS_DEBUG == 1)
-#define debug(err)                                                                                                     \
-    if (err != TINYTHREADS_OK)                                                                                         \
-    {                                                                                                                  \
-        printf("!!! err @ %s: %s !!!\r\n", __func__, errorToString(err));                                              \
+#define debug(err)                                                         \
+    if (err != TINYTHREADS_OK)                                             \
+    {                                                                      \
+        printf("!!! err @ %s: %s !!!\r\n", __func__, errorToString(err));  \
+        if (CFG_TINYTHREADS_DEBUG_HALT_ON_ERROR)                           \
+        {                                                                  \
+            TT_ASM_BREAKPOINT();                                           \
+        }                                                                  \
     }
-
+// clang-format on
 __STATIC_FORCEINLINE void port_dbg_signal_1_assert(void)
 {
     // set GPIOC pin 9 high using registers
@@ -40,10 +45,10 @@ __STATIC_FORCEINLINE void port_dbg_signal_2_deassert(void)
     GPIOC->BSRR = GPIO_BSRR_BR_8;
 }
 #else
-#define debug(err) ((void)0)
-#define port_dbg_signal_1_assert() ((void)0)
+#define debug(err)                   ((void)0)
+#define port_dbg_signal_1_assert()   ((void)0)
 #define port_dbg_signal_1_deassert() ((void)0)
-#define port_dbg_signal_2_assert() ((void)0)
+#define port_dbg_signal_2_assert()   ((void)0)
 #define port_dbg_signal_2_deassert() ((void)0)
 #endif
 

@@ -20,6 +20,6 @@
 #define CFG_TINYTASK_ROUND_ROBIN 1
 
 /* ---------- Debugging ----------*/
-#define CFG_TINYTHREADS_DEBUG 1
-
+#define CFG_TINYTHREADS_DEBUG               1
+#define CFG_TINYTHREADS_DEBUG_HALT_ON_ERROR 1
 #endif // TINYTHREADS_CONFIG_H

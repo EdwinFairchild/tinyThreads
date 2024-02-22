@@ -73,6 +73,7 @@ static TinyThreadsStatus tinyThread_ready_thread_add_ll(tinyThread_tcb_idx id)
         tinyThread_ready_threads_list.tcb_ll_tail->next = tinyThread_ready_threads_list.tcb_ll_head;
     }
 
+    debug(err);
     return err;
 }
 
@@ -185,7 +186,7 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
             err = TINYTHREADS_OK;
         }
     }
-
+    debug(err);
     return err;
 }
 
@@ -200,6 +201,7 @@ static TinyThreadsStatus tinyThread_canAddThread(void)
     {
         err = TINYTHREADS_MAX_THREADS_REACHED;
     }
+    debug(err);
     return err;
 }
 
@@ -237,7 +239,7 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX)
     tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 14] = 0xb2345678; // R6
     tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 15] = 0xc2345678; // R5
     tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 16] = 0xd2345678; // R4
-
+    debug(err);
     return err;
 }
 
@@ -302,11 +304,11 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), tinyThreadsTime_ms_t p
     }
     /* enable interrupts */
     tt_CoreCsExit();
-    debug(err);
     if (err != TINYTHREADS_OK)
     {
         id = err;
     }
+    debug(err);
     return id;
 }
 
@@ -386,6 +388,7 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
         }
         temp = temp->next;
     }
+    debug(err);
     return err; // TODO : error check
 }
 
@@ -400,6 +403,7 @@ TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
     tinyThread_addThreadToNonReadyList(tinyThread_current_tcb->id);
     tt_CoreCsExit();
     tt_ThreadYield(true);
+    debug(err);
     return err;
 }
 
@@ -417,6 +421,7 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
         err = tinyThread_removeThreadFromNonReadyList(id);
         tt_CoreCsExit();
     }
+    debug(err);
     return err;
 }
 
@@ -431,6 +436,7 @@ TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
         err = TINYTHREADS_OK;
         tt_CoreCsExit();
     }
+    debug(err);
     return err;
 }
 
@@ -447,6 +453,7 @@ TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id)
         err = TINYTHREADS_OK;
         tt_CoreCsExit();
     }
+    debug(err);
     return err;
 }
 
@@ -458,16 +465,19 @@ tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
     {
         return tinyThread_thread_ctl[id].sleep_count_ms;
     }
+    // ID not valid
+    debug(TINYTHREADS_INVALID_TASK);
     return 0;
 }
 
-tinyThreadsTime_ms_t tt_ThreadGetNotifyToCount(tinyThread_tcb_idx id)
+tinyThreadsTime_ms_t tt_ThreadGetNotifyTimeoutCount(tinyThread_tcb_idx id)
 {
-    // TODO: implement
     if (tt_isValidTcb(id))
     {
         return tinyThread_thread_ctl[id].notify_timeout_count;
     }
+    // ID not valid
+    debug(TINYTHREADS_INVALID_TASK);
     return 0;
 }
 
@@ -478,11 +488,12 @@ tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
 
 tinyThread_tcb *tt_ThreadGetTcbByID(tinyThread_tcb_idx id)
 {
-    // TOOD this assumes static allocation of tcb
     if (tt_isValidTcb(id))
     {
         return &tinyThread_thread_ctl[id];
     }
+    // ID not valid
+    debug(TINYTHREADS_INVALID_TASK);
     return NULL;
 }
 
@@ -491,7 +502,6 @@ TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb)
     TinyThreadsStatus err = TINYTHREADS_OK;
     if (tcb != NULL)
     {
-
         if (tt_isValidTcb(tcb->id))
         {
             tinyThread_current_tcb = tcb;
@@ -501,6 +511,7 @@ TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb)
             err = TINYTHREADS_ERROR;
         }
     }
+    debug(err);
     return err;
 }
 
@@ -538,6 +549,7 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
         tempTcb->notifyConsumed = true;
     }
     tt_CoreCsExit();
+    debug(err);
     return err;
 }
 
@@ -581,6 +593,7 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
         }
     }
     tt_CoreCsExit();
+    debug(err);
     return err;
 }
 
