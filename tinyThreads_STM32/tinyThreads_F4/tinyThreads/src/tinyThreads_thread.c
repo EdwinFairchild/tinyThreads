@@ -213,27 +213,27 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, uint32_t *stackP
         /*  initialize the stack pointer
             R13 is stack pointer, we manages the register manually using the stack pointer blow */
         tinyThread_thread_ctl[threadIDX].stackPointer = (uint32_t *)&stackPtr[stacksize - 16];
-        tinyThread_thread_ctl[threadIDX].lastRunTime = tinyThread_tick_get();
+        tinyThread_thread_ctl[threadIDX].lastRunTime = tt_TimeGetTick();
         stackPtr[TT_EXCEPTION_FRAME_PC(stacksize)] = (uint32_t)thread;
         stackPtr[TT_EXCEPTION_FRAME_PSR(stacksize)] |= (1 << 24); // xPSR --------
         /*  The PC get initialized in tt_ThreadAdd                               |
-        tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */ //    |
-        stackPtr[TT_EXCEPTION_FRAME_LR(stacksize)] = 0xe2345678;  // R14 (LR)    |
-        stackPtr[TT_EXCEPTION_FRAME_R12(stacksize)] = 0x12345678; // R12         |
-        stackPtr[TT_EXCEPTION_FRAME_R3(stacksize)] = 0x22345678;  // R3          ---- Exception frame
-        stackPtr[TT_EXCEPTION_FRAME_R2(stacksize)] = 0x32345678;  // R2          |
-        stackPtr[TT_EXCEPTION_FRAME_R1(stacksize)] = 0x42345678;  // R1          |
-        stackPtr[TT_EXCEPTION_FRAME_R0(stacksize)] = 0x52345678;  // R0 ----------
+        tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */
+        stackPtr[TT_EXCEPTION_FRAME_LR(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R14 (LR)
+        stackPtr[TT_EXCEPTION_FRAME_R12(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R12
+        stackPtr[TT_EXCEPTION_FRAME_R3(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R3
+        stackPtr[TT_EXCEPTION_FRAME_R2(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R2
+        stackPtr[TT_EXCEPTION_FRAME_R1(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R1
+        stackPtr[TT_EXCEPTION_FRAME_R0(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R0
 
         // R4-R11 are general purpose registers that are optional to save
-        stackPtr[stacksize - 9] = 0x62345678;  // R11
-        stackPtr[stacksize - 10] = 0x72345678; // R10
-        stackPtr[stacksize - 11] = 0x82345678; // R9
-        stackPtr[stacksize - 12] = 0x92345678; // R8
-        stackPtr[stacksize - 13] = 0xa2345678; // R7
-        stackPtr[stacksize - 14] = 0xb2345678; // R6
-        stackPtr[stacksize - 15] = 0xc2345678; // R5
-        stackPtr[stacksize - 16] = 0xd2345678; // R4
+        // stackPtr[stacksize - 9] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R11
+        // stackPtr[stacksize - 10] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R10
+        // stackPtr[stacksize - 11] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R9
+        // stackPtr[stacksize - 12] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R8
+        // stackPtr[stacksize - 13] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R7
+        // stackPtr[stacksize - 14] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R6
+        // stackPtr[stacksize - 15] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R5
+        // stackPtr[stacksize - 16] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R4
     }
     else
     {

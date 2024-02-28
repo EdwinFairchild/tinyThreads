@@ -10,6 +10,24 @@ uint8_t small_alloc_flags[CFG_MEM_POOLNUM_SMALL_BLOCKS] = {0};
 uint8_t medium_alloc_flags[CFG_MEM_POOLNUM_MEDIUM_BLOCKS] = {0};
 uint8_t large_alloc_flags[CFG_MEM_POOLNUM_LARGE_BLOCKS] = {0};
 
+static void tinyThreads_MemoryInit()
+{
+    // Initialize the memory pool with a known value
+    for (int i = 0; i < CFG_MEM_POOLNUM_SMALL_BLOCKS; i++)
+    {
+        memset(small_pool[i], CFG_MEM_POOL_UNUSED_VALUE, CFG_MEM_POOL_SMALL_SIZE_BYTES);
+    }
+
+    for (int i = 0; i < CFG_MEM_POOLNUM_MEDIUM_BLOCKS; i++)
+    {
+        memset(medium_pool[i], CFG_MEM_POOL_UNUSED_VALUE, CFG_MEM_POOL_MEDIUM_SIZE_BYTES);
+    }
+
+    for (int i = 0; i < CFG_MEM_POOLNUM_LARGE_BLOCKS; i++)
+    {
+        memset(large_pool[i], CFG_MEM_POOL_UNUSED_VALUE, CFG_MEM_POOL_LARGE_SIZE_BYTES);
+    }
+}
 // Function to allocate memory from the pool
 void *tt_MemoryAllocBuf(size_t size)
 {
@@ -94,4 +112,10 @@ void tt_MemoryFreeBuf(void *ptr)
             }
         }
     }
+}
+
+TinyThreadsStatus tt_MemoryInit(void)
+{
+    tinyThreads_MemoryInit();
+    return TINYTHREADS_OK;
 }

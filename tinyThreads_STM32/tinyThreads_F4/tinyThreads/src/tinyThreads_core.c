@@ -26,6 +26,7 @@ TinyThreadsStatus tt_CoreInit(void)
 {
     // TODO : the err logic here is not correct, i think
     TinyThreadsStatus err = TINYTHREADS_OK;
+    err = tt_MemoryInit();
     // add system related threads
     tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, systemThreadStack, 200, 10, 1, (uint8_t *)"Sys thread", true);
     // os cannot function without system thread
@@ -115,7 +116,7 @@ void tt_CoreSystemTickHandler(void)
 
     // this should be shecked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
-    if (current_tcb->period_ms <= (tinyThread_tick_get() - current_tcb->lastRunTime))
+    if (current_tcb->period_ms <= (tt_TimeGetTick() - current_tcb->lastRunTime))
     {
         tt_ThreadUpdateNextThreadPtr();
         // generate pendsv interrupt
