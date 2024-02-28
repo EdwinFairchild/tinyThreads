@@ -77,11 +77,11 @@ R0 (lowest address value) */
 extern uint32_t tinyThread_tick;
 #define tt_tick_inc()           (++tinyThread_tick)
 #define tinyThread_tick_reset() (tinyThread_tick = 0)
-#define tinyThread_tick_get()   (tinyThread_tick)
+#define tt_TimeGetTick()        (tinyThread_tick)
 // TODO: This is not accurate, it should be the time since the last tick ?
-#define tinyThread_tick_getElapsedMs(tick) (tinyThread_tick_get() - tick)
+#define tt_TimeGetTickElapsedMs(tick) ((uint32_t)(tt_TimeGetTick() - (uint32_t)tick))
 // TODO this is negative if called frequently, maybe ebcause tick has not been incremented
-#define tinyThread_tick_getApproxJitterMs(tick, expected) (tinyThread_tick_getElapsedMs(tick) - expected)
+#define tt_TimeGetTickApproxJitterMs(tick, expected) (tt_TimeGetTickElapsedMs(tick) - expected)
 TinyThreadsStatus tt_CoreInit(void);
 TinyThreadsStatus tt_CoreRun(void);
 void              tt_CoreSystemTickHandler(void);
