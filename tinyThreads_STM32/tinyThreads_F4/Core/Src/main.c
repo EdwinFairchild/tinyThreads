@@ -69,9 +69,14 @@ uint32_t thread3_stack[200];
 // thread 4 stack
 uint32_t thread4_stack[200];
 
+static tinyThreadsTime_ms_t previousTimeerTime = 0;
+
 void myTimerCallback(void)
 {
-    printf("Timer callback\r\n");
+    // calcualte elapsed time
+    tinyThreadsTime_ms_t currentTime = tt_TimeGetTick();
+
+    printf("Timer callback : %ld\r\n", (int)tt_TimeGetTickElapsedMs(previousTimeerTime));
 }
 tinyThread_timer_t mytimer = {TIMER_TYPE_SINGLE_SHOT, 3000, 3000, myTimerCallback, false};
 /* USER CODE END PV */
@@ -148,9 +153,9 @@ void thread3(uint32_t notifyVal)
 
         printf("notifyVal: %d\r\n", (int)newval);
         // print elapsed time
-        printf("Elapsed time: %d:%ld\r\n", (int)tinyThread_tick_getElapsedMs(previousTime),
-               tinyThread_tick_getApproxJitterMs(previousTime, 5000));
-        previousTime = tinyThread_tick_get();
+        printf("Elapsed time: %d:%ld\r\n", (int)tt_TimeGetTickElapsedMs(previousTime),
+               tt_TimeGetTickApproxJitterMs(previousTime, 5000));
+        previousTime = tt_TimeGetTick();
         //   tt_ThreadSleep(500);
     }
 }
@@ -172,12 +177,13 @@ void thread4(uint32_t notifyVal)
 void EXTI15_10_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-    tinyThreadsTime_ms_t currentTime = tinyThread_tick_get();
+    tinyThreadsTime_ms_t currentTime = tt_TimeGetTick();
 
     if (currentTime - previousTime > 400)
     {
-        previousTime = currentTime;
-        tt_ThreadNotify(thread3_id, notifyCounter++, true);
+        // previousTime = currentTime;
+        // tt_ThreadNotify(thread3_id, notifyCounter++, true);
+        previousTimeerTime = currentTime;
         tt_TimerStart(&mytimer);
     }
 

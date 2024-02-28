@@ -19,6 +19,7 @@ static bool tinythread_DoesTimerExist(tinyThread_timer_t *timer)
 
 void tt_TimerAdd(tinyThread_timer_t *timer)
 {
+    // if the timer is not already in the list, add it
     if (!tinythread_DoesTimerExist(timer))
     {
         tinyThread_timer_node_t *new_node =
@@ -85,19 +86,23 @@ void tt_TimerRemove(tinyThread_timer_t *timer)
 void tt_TimerUpdate()
 {
     tinyThread_timer_node_t *current = ready_timers_list.head;
+    // find all active timers and decrement their count down
     while (current != NULL)
     {
         if (current->timer->active)
         {
             current->timer->countDown--;
+            // if the timer has expired, call the callback
             if (current->timer->countDown == 0)
             {
                 current->timer->callback();
+                // if the timer is a single shot, remove it
                 if (current->timer->timerMode == TIMER_TYPE_SINGLE_SHOT)
                 {
                     current->timer->active = false;
                     tt_TimerRemove(current->timer);
                 }
+                // if the timer is a periodic timer, reset the count down
                 else
                 {
                     current->timer->countDown = current->timer->period;
