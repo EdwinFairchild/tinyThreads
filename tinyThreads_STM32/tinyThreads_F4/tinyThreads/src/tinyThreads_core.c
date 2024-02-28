@@ -1,6 +1,6 @@
 #include "tinyThreads_core.h"
 #include "tinyThreads_error.h"
-
+#include "tinyThreads_time.h"
 // TODO : save state of interrupts before entering cs and restore afterwards
 static uint32_t cs_nesting = 0;
 tinyThread_tcb *current_tcb = NULL;

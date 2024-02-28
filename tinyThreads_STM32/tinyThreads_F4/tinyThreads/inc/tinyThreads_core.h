@@ -15,6 +15,7 @@
 #include "tinyThreads_port.h"
 #include "tinyThreads_system.h"
 #include "tinyThreads_thread.h"
+#include "tinyThreads_time.h"
 #include "tinyThreads_timers.h"
 #include "tinyThreads_types.h"
 
@@ -73,19 +74,6 @@ R0 (lowest address value) */
 /*****************************************************************************
 ******************************************************************************/
 
-/***************| system tick macros |**********************/
-extern uint32_t tinyThread_tick;
-#define tt_tick_inc()           (++tinyThread_tick)
-#define tinyThread_tick_reset() (tinyThread_tick = 0)
-#define tt_TimeGetTick()        (tinyThread_tick)
-// TODO: This is not accurate, it should be the time since the last tick ?
-#define tt_TimeGetTickElapsedMs(tick) ((uint32_t)(tt_TimeGetTick() - (uint32_t)tick))
-// TODO this is negative if called frequently, maybe ebcause tick has not been incremented
-#define tt_TimeGetTickApproxJitterMs(tick, expected) (tt_TimeGetTickElapsedMs(tick) - expected)
-TinyThreadsStatus tt_CoreInit(void);
-TinyThreadsStatus tt_CoreRun(void);
-void              tt_CoreSystemTickHandler(void);
-
 /*************************************************
  * Critical sections should be nested
  * and only the outermost critical section
@@ -93,5 +81,10 @@ void              tt_CoreSystemTickHandler(void);
  *************************************************/
 void tt_CoreCsEnter(void);
 void tt_CoreCsExit(void);
+
+TinyThreadsStatus tt_CoreInit(void);
+TinyThreadsStatus tt_CoreRun(void);
+
+void tt_CoreSystemTickHandler(void);
 
 #endif // TINYKERNEL_H

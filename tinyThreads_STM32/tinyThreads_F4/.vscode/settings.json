@@ -33,7 +33,8 @@
         "core_cm4.h": "c",
         "tinythreads_memory.h": "c",
         "tinythreads_timers.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "tinythreads_time.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.style": "file",
