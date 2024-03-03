@@ -73,7 +73,7 @@ typedef struct
 typedef enum tinyThread_timer_mode
 {
     TIMER_TYPE_SINGLE_SHOT,
-    TIMER_TYPE_PERIODIC
+    TIMER_TYPE_CONTINUOUS
 } tinyThread_timer_mode_t;
 
 typedef struct tinyThread_timer
