@@ -26,8 +26,8 @@ TinyThreadsStatus tt_CoreInit(void)
 {
     // TODO : the err logic here is not correct, i think
     TinyThreadsStatus err = TINYTHREADS_OK;
-    err = tt_MemoryInit();
     // add system related threads
+    err = tt_MemoryInit();
     tinyThread_tcb_idx id = tt_ThreadAdd(systemThread, systemThreadStack, 200, 10, 1, (uint8_t *)"Sys thread", true);
     // os cannot function without system thread
     if (id >= 0)
@@ -120,7 +120,7 @@ void tt_CoreSystemTickHandler(void)
     {
         tt_ThreadUpdateNextThreadPtr();
         // generate pendsv interrupt
-        SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+        FORCE_YEILD_INTERRUPT();
     }
     port_dbg_signal_2_deassert();
 }
