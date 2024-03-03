@@ -115,7 +115,10 @@ void tt_CoreSystemTickHandler(void)
     if (tt_TimerGetCount() > 0)
         tt_TimerUpdate();
 
-    // this should be shecked in the linked list for non ready threads
+    // TODO this needs to be reworked, perhaps just call update next thread ptr
+    // and it can determine if the current thread should be switched out
+    // due to time quantum or priority
+    // this should be checked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
     if (current_tcb->period_ms <= (tt_TimeGetTick() - current_tcb->lastRunTime))
     {

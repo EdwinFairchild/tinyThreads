@@ -35,7 +35,8 @@
         "tinythreads_timers.h": "c",
         "typeinfo": "c",
         "tinythreads_time.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "tinythreads_semaphore.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false,
     "clang-format.style": "file",

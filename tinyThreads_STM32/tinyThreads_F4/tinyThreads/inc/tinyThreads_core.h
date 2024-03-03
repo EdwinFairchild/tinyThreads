@@ -1,6 +1,7 @@
 #ifndef TINYKERNEL_H
 #define TINYKERNEL_H
 
+// clang-format off
 #include "stdarg.h"
 #include "stdbool.h"
 #include "stddef.h"
@@ -8,19 +9,20 @@
 #include "stdio.h"
 #include "string.h"
 
+#include "tinyThreads_types.h"
 #include "tinyThreads_config.h"
 #include "tinyThreads_debug.h"
 #include "tinyThreads_error.h"
 #include "tinyThreads_memory.h"
 #include "tinyThreads_port.h"
+#include "tinyThreads_semaphore.h"
 #include "tinyThreads_system.h"
 #include "tinyThreads_thread.h"
 #include "tinyThreads_time.h"
 #include "tinyThreads_timers.h"
-#include "tinyThreads_types.h"
 
 #include "stdlib.h"
-
+// clang-format on
 /******************************************************************************
 ************************| TintyThread thread count |***************************
 ******************************************************************************/

@@ -139,4 +139,11 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
  **************************************************************************/
 uint32_t tt_ThreadGetInactiveThreadCount(void);
 
+/**************************************************************************
+ * TODO :
+ *
+ *
+ **************************************************************************/
+TinyThreadsStatus tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state);
+
 #endif // TINYTHREADS_TASK_H
