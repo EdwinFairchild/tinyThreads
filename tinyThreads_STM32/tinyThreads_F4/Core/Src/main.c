@@ -75,10 +75,10 @@ void myTimerCallback(void)
 {
     // calcualte elapsed time
     tinyThreadsTime_ms_t currentTime = tt_TimeGetTick();
-
     printf("Timer callback : %ld\r\n", (int)tt_TimeGetTickElapsedMs(previousTimeerTime));
+    previousTimeerTime = currentTime;
 }
-tinyThread_timer_t mytimer = {TIMER_TYPE_SINGLE_SHOT, 3000, 3000, myTimerCallback, false};
+tinyThread_timer_t mytimer = {TIMER_TYPE_CONTINUOUS, 3000, 3000, myTimerCallback, false};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -170,7 +170,7 @@ void thread4(uint32_t notifyVal)
         HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
         tt_ThreadSleep(60);
 
-        //   tt_ThreadSleep(500);
+        // tt_ThreadSleep(500);
     }
 }
 

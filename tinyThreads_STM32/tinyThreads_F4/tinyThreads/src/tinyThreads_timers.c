@@ -2,6 +2,7 @@
 
 // Timer ready list
 tinyThread_ready_timers_list_t ready_timers_list;
+static uint32_t                sw_timer_count = 0;
 
 static bool tinythread_DoesTimerExist(tinyThread_timer_t *timer)
 {
@@ -43,6 +44,7 @@ void tt_TimerAdd(tinyThread_timer_t *timer)
             new_node->prev = ready_timers_list.tail;
             ready_timers_list.tail = new_node;
         }
+        sw_timer_count++;
     }
 }
 
@@ -80,6 +82,7 @@ void tt_TimerRemove(tinyThread_timer_t *timer)
     if (nodeToRemove != NULL)
     {
         tt_MemoryFreeBuf(nodeToRemove);
+        sw_timer_count--;
     }
 }
 
@@ -127,4 +130,9 @@ void tt_TimerStart(tinyThread_timer_t *timer)
         timer->countDown = timer->period;
     }
     tt_TimerAdd(timer);
+}
+
+uint32_t tt_TimerGetCount(void)
+{
+    return sw_timer_count;
 }

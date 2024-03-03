@@ -112,7 +112,8 @@ void tt_CoreSystemTickHandler(void)
     }
 
     // update timers
-    tt_TimerUpdate();
+    if (tt_TimerGetCount() > 0)
+        tt_TimerUpdate();
 
     // this should be shecked in the linked list for non ready threads
     // check the thread control block to see if its time to switch it out (Round Robin)
