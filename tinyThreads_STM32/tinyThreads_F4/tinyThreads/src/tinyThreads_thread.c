@@ -361,6 +361,21 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
                 tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
             }
             break;
+        case THREAD_STATE_SEMAPHORE_WAIT:
+            // semaphore_timeout_count
+            if (temp->tcb->semaphore_timeout_count > 0)
+            {
+                temp->tcb->semaphore_timeout_count--;
+            }
+            else
+            {
+                // set state to ready
+                temp->tcb->state &= ~THREAD_STATE_SEMAPHORE_WAIT;
+                // remove from non ready list
+                tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
+            }
+            // do nothing
+            break;
         case THREAD_STATE_PAUSED:
             // do nothing,
             // thread is paused directly from tt_ThreadPause
@@ -394,10 +409,15 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
 
 TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
 {
+    tt_ThreadSleepState(time_ms, THREAD_STATE_SLEEPING);
+}
+
+TinyThreadsStatus tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state)
+{
     TinyThreadsStatus err = TINYTHREADS_OK;
     tt_CoreCsEnter();
     // set state to sleeping
-    tinyThread_current_tcb->state |= THREAD_STATE_SLEEPING;
+    tinyThread_current_tcb->state |= state;
     // set sleep counter
     tinyThread_current_tcb->sleep_count_ms = time_ms;
     tinyThread_addThreadToNonReadyList(tinyThread_current_tcb->id);

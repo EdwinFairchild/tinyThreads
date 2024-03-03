@@ -56,10 +56,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-tinyThread_tcb_idx   thread1_id, thread2_id, thread3_id;
-static uint32_t      notifyCounter = 0;
-tinyThreadsTime_ms_t previousTime = 0;
-
+tinyThread_tcb_idx            thread1_id, thread2_id, thread3_id;
+static uint32_t               notifyCounter = 0;
+tinyThreadsTime_ms_t          previousTime = 0;
+tinyThread_binary_semaphore_t mySemaphore = {true};
 // thread 1 stack
 uint32_t thread1_stack[200];
 // thread 2 stack
@@ -121,8 +121,17 @@ void thread1(uint32_t notifyVal)
     // static uint32_t prev_runtime = 0;
     while (1)
     {
-        printf("thread1\r\n");
-        tt_ThreadSleep(1000);
+        if (tt_SemaphoreTake(&mySemaphore, 3000))
+        {
+            printf("thread1: semaphore taken succesfully\r\n");
+            tt_SemaphoreGive(&mySemaphore);
+            tt_ThreadSleep(1000);
+        }
+        else
+        {
+            printf("thread1: semaphore timedout\r\n");
+            tt_ThreadSleep(1000);
+        }
     }
 }
 
@@ -185,6 +194,7 @@ void EXTI15_10_IRQHandler(void)
         // tt_ThreadNotify(thread3_id, notifyCounter++, true);
         previousTimeerTime = currentTime;
         tt_TimerStart(&mytimer);
+        tt_SemaphoreGive(&mySemaphore);
     }
 
     /* USER CODE END EXTI15_10_IRQn 1 */
