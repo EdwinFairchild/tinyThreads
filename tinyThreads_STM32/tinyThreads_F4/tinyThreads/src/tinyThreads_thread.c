@@ -418,8 +418,16 @@ void tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state)
     tt_CoreCsEnter();
     // set state to sleeping
     tinyThread_current_tcb->state |= state;
-    // set sleep counter
-    tinyThread_current_tcb->sleep_count_ms = time_ms;
+    if (state == THREAD_STATE_SLEEPING)
+    {
+
+        // set sleep counter
+        tinyThread_current_tcb->sleep_count_ms = time_ms;
+    }
+    else if (state == THREAD_STATE_SEMAPHORE_WAIT)
+    {
+        tinyThread_current_tcb->semaphore_timeout_count = time_ms;
+    }
     err = tinyThread_addThreadToNonReadyList(tinyThread_current_tcb->id);
     tt_CoreCsExit();
     debug(err);
