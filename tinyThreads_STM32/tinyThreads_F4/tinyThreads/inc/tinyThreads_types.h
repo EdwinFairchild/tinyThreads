@@ -17,6 +17,7 @@ typedef uint32_t tinyThread_state;
 #define THREAD_STATE_SLEEPING       (1 << 2)
 #define THREAD_STATE_PAUSED         (1 << 3)
 #define THREAD_STATE_PENDING_NOTIFY (1 << 4)
+#define THREAD_STATE_SEMAPHORE_WAIT (1 << 5)
 /* Thread Control Block */
 typedef struct tinyThread_tcb tinyThread_tcb_t;
 
@@ -33,6 +34,7 @@ typedef struct tinyThread_tcb
     uint32_t            *notifyVal;                             // Value to be passed during notification
     bool                 notifyConsumed;                        // Notification pending flag
     tinyThreadsTime_ms_t sleep_count_ms;                        // sleep count in ms
+    tinyThreadsTime_ms_t semaphore_timeout_count;               // sleep count in ms
     tinyThreadsTime_ms_t notify_timeout_count;                  // timeout counter
     tinyThread_tcb_idx   id;                                    // Unique thread identifier
     uint8_t              name[CFG_TINYTHREADS_MAX_NAME_LENGTH]; // Name of the thread
@@ -97,5 +99,13 @@ typedef struct
     tinyThread_timer_node_t *head;
     tinyThread_timer_node_t *tail;
 } tinyThread_ready_timers_list_t;
+
+// ----------| Binary semaphore |---------//
+#define TT_WAIT_FOREVER (0xFFFFFFFF)
+
+typedef struct tinyThread_binary_semaphore
+{
+    bool locked;
+} tinyThread_binary_semaphore_t;
 
 #endif // TINYTHREADS_TYPES_H

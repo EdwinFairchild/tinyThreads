@@ -27,7 +27,7 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, ui
  *
  *
  **************************************************************************/
-TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms);
+void tt_ThreadSleep(uint32_t time_ms);
 
 /**************************************************************************
  * tt_ThreadWake
@@ -138,5 +138,12 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
  *
  **************************************************************************/
 uint32_t tt_ThreadGetInactiveThreadCount(void);
+
+/**************************************************************************
+ * TODO :
+ *
+ *
+ **************************************************************************/
+void tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state);
 
 #endif // TINYTHREADS_TASK_H

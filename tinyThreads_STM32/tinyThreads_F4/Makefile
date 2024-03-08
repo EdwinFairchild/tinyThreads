@@ -65,6 +65,7 @@ tinyThreads/src/tinyThreads_thread.c \
 tinyThreads/src/tinyThreads_debug.c \
 tinyThreads/src/tinyThreads_memory.c \
 tinyThreads/src/tinyThreads_timers.c \
+tinyThreads/src/tinyThreads_semaphore.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c
 # ASM sources
 # ASM sources# ASM sources# ASM sources

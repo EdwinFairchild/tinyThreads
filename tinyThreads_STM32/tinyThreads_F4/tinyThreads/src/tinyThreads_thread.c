@@ -361,6 +361,21 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
                 tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
             }
             break;
+        case THREAD_STATE_SEMAPHORE_WAIT:
+            // semaphore_timeout_count
+            if (temp->tcb->semaphore_timeout_count > 0)
+            {
+                temp->tcb->semaphore_timeout_count--;
+            }
+            else
+            {
+                // set state to ready
+                temp->tcb->state &= ~THREAD_STATE_SEMAPHORE_WAIT;
+                // remove from non ready list
+                tinyThread_removeThreadFromNonReadyList(temp->tcb->id);
+            }
+            // do nothing
+            break;
         case THREAD_STATE_PAUSED:
             // do nothing,
             // thread is paused directly from tt_ThreadPause
@@ -392,19 +407,31 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
     return err;
 }
 
-TinyThreadsStatus tt_ThreadSleep(uint32_t time_ms)
+void tt_ThreadSleep(uint32_t time_ms)
+{
+    tt_ThreadSleepState(time_ms, THREAD_STATE_SLEEPING);
+}
+
+void tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     tt_CoreCsEnter();
     // set state to sleeping
-    tinyThread_current_tcb->state |= THREAD_STATE_SLEEPING;
-    // set sleep counter
-    tinyThread_current_tcb->sleep_count_ms = time_ms;
-    tinyThread_addThreadToNonReadyList(tinyThread_current_tcb->id);
+    tinyThread_current_tcb->state |= state;
+    if (state == THREAD_STATE_SLEEPING)
+    {
+
+        // set sleep counter
+        tinyThread_current_tcb->sleep_count_ms = time_ms;
+    }
+    else if (state == THREAD_STATE_SEMAPHORE_WAIT)
+    {
+        tinyThread_current_tcb->semaphore_timeout_count = time_ms;
+    }
+    err = tinyThread_addThreadToNonReadyList(tinyThread_current_tcb->id);
     tt_CoreCsExit();
-    tt_ThreadYield(true);
     debug(err);
-    return err;
+    tt_ThreadYield(true);
 }
 
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
@@ -542,6 +569,7 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
     // We get to this point if there is a notification or we timedout
     // or if timeout is 0 or if there is a notification
     // TODO : we should check if we timedout or not could be useful
+    // do we need err status here?
     if (tempTcb->notifyVal != NULL)
     {
         // read the value
