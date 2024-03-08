@@ -9,7 +9,13 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
-            "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin",
+            "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}",
+            "windows": {
+                "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}"
+            },
+            "linux": {
+                "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin"
+            },
             "device": "STM32F446RE",
             "configFiles": [
                 "interface/stlink.cfg",
@@ -29,7 +35,13 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
-            "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin",
+            "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}",
+            "windows": {
+                "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}"
+            },
+            "linux": {
+                "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin"
+            },
             "device": "STM32F446RE",
             "configFiles": [
                 "interface/stlink.cfg",
@@ -48,7 +60,13 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
-            "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin",
+            "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}",
+            "windows": {
+                "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}"
+            },
+            "linux": {
+                "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin"
+            },
             "device": "STM32F446RE",
             "configFiles": [
                 "interface/stlink.cfg",
