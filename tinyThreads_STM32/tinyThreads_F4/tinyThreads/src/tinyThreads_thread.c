@@ -26,9 +26,9 @@ static tinyThread_suspended_threads_list_t tinyThread_suspended_threads_list;
 static tinyThread_tcb_idx tinyThreads_thread_Count = 0;
 
 static uint32_t tinyThread_inactive_thread_count = 0;
-/***************| system tick |**********************/
+// system tick
 tinyThreadsTime_ms_t tinyThread_tick = 0;
-
+//**************************************************************************
 static bool tt_isValidTcb(tinyThread_tcb_idx id)
 {
     bool valid = false;
@@ -38,17 +38,7 @@ static bool tt_isValidTcb(tinyThread_tcb_idx id)
     }
     return valid;
 }
-/**************************************************************************
- * linked list functions for : tcb linked list and non ready threads linked list
- ***************************************************************************/
-
-/**************************************************************************
- * Attempt to add a new thread to the thread control block linked list
- * Can only get here through tt_ThreadAdd
- * which veryfies tinyThread_canAddThread
- * this linked list contains all threads in all states
- * return : TinyThreadsStatus
- ***************************************************************************/
+//**************************************************************************
 static TinyThreadsStatus tinyThread_ready_thread_add_ll(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -69,12 +59,7 @@ static TinyThreadsStatus tinyThread_ready_thread_add_ll(tinyThread_tcb_idx id)
     debug(err);
     return err;
 }
-
-/**************************************************************************
- * Add a tcb to the non ready list array
- * This list only contains threads that are not ready to run
- * return : TinyThreadsStatus
- **************************************************************************/
+//**************************************************************************
 static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -122,11 +107,7 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
     tt_CoreCsExit();
     return err;
 }
-/**************************************************************************
- * Remove a tcb from the non ready list
- * This list only contains threads that are not ready to run
- * return : TinyThreadsStatus
- **************************************************************************/
+//**************************************************************************
 static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
@@ -182,11 +163,7 @@ static TinyThreadsStatus tinyThread_removeThreadFromNonReadyList(tinyThread_tcb_
     debug(err);
     return err;
 }
-
-/**************************************************************************
- * Check if max num of threads have been added:
- * return : TinyThreadsStatus
- **************************************************************************/
+//**************************************************************************
 static TinyThreadsStatus tinyThread_canAddThread(void)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -198,26 +175,22 @@ static TinyThreadsStatus tinyThread_canAddThread(void)
     return err;
 }
 
-/**************************************************************************
- * - Initializes the stack for a thread to mostly dummy values
- *  -set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
- * stacks are in decending order
- * this is why we set the stack pointer to the last element of the stack
- ***************************************************************************/
+//**************************************************************************
 static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, uint32_t *stackPtr, uint32_t stacksize,
                                             void (*thread)(uint32_t))
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
     if (stackPtr != NULL && stacksize != 0 && thread != NULL && threadIDX < TT_MAX_THREADS)
     {
-        /*  initialize the stack pointer
-            R13 is stack pointer, we manages the register manually using the stack pointer blow */
+        // initialize the stack pointer
+        // R13 is stack pointer, we manages the register manually using the stack pointer blow
         tinyThread_thread_ctl[threadIDX].stackPointer = (uint32_t *)&stackPtr[stacksize - 16];
         tinyThread_thread_ctl[threadIDX].lastRunTime = tt_TimeGetTick();
         stackPtr[TT_EXCEPTION_FRAME_PC(stacksize)] = (uint32_t)thread;
+        //set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
         stackPtr[TT_EXCEPTION_FRAME_PSR(stacksize)] |= (1 << 24); // xPSR --------
-        /*  The PC get initialized in tt_ThreadAdd                               |
-        tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; // PC */
+        // The PC get initialized in tt_ThreadAdd                   
+        // tinyThread_stack[threadIDX][CFG_TINYTHREADS_STACK_SIZE - 2] = 0x12345678; 
         stackPtr[TT_EXCEPTION_FRAME_LR(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R14 (LR)
         stackPtr[TT_EXCEPTION_FRAME_R12(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE; // R12
         stackPtr[TT_EXCEPTION_FRAME_R3(stacksize)] = CFG_TINYTHREADS_STACK_INIT_VALUE;  // R3
@@ -242,24 +215,10 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, uint32_t *stackP
     debug(err);
     return err;
 }
-
-/**************************************************************************
- * Add a thread to the linked list
- * - Add the thread to the ready linked list or non ready linked list
- * - Initialize the stack for the thread
- * - Initialize the PC for the thread to the thread function
- *   this is only valid on initilization, during execution the PC can be
- *   anywhere in the thread function
- * - Increment the tinyThreads_thread_Count
- *
- *  TODO: make a thread type with period and other things , also make thread type
- *  accept a 32bit argument that can be used to pass messages in the form of
- * a pointer to a struct or literal number
- **************************************************************************/
+//**************************************************************************
 tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, uint32_t stackSize,
                                 tinyThreadsTime_ms_t period, tinyThreadPriority_t priority, uint8_t *name, bool ready)
 {
-
     TinyThreadsStatus err = TINYTHREADS_OK;
     // var to store id of thread
     tinyThread_tcb_idx id = 0;
@@ -311,12 +270,12 @@ tinyThread_tcb_idx tt_ThreadAdd(void (*thread)(uint32_t), uint32_t *stackPtr, ui
     debug(err);
     return id;
 }
-
+//**************************************************************************
 tinyThreadsTime_ms_t tt_ThreadGetLastRunTime()
 {
     return tinyThread_current_tcb->lastRunTime;
 }
-
+//**************************************************************************
 void tt_ThreadYield(bool updateNext)
 {
     // in some cases we will have already update the next tcb
@@ -326,7 +285,7 @@ void tt_ThreadYield(bool updateNext)
     }
     FORCE_YEILD_INTERRUPT();
 }
-
+//**************************************************************************
 void tt_ThreadUpdateNextThreadPtr(void)
 {
     // TODO need to make this more efficient, and priority aware
@@ -338,7 +297,7 @@ void tt_ThreadUpdateNextThreadPtr(void)
         tinyThread_next_tcb = tinyThread_next_tcb->next;
     }
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadUpdateInactive(void)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -406,12 +365,12 @@ TinyThreadsStatus tt_ThreadUpdateInactive(void)
     debug(err);
     return err;
 }
-
+//**************************************************************************
 void tt_ThreadSleep(uint32_t time_ms)
 {
     tt_ThreadSleepState(time_ms, THREAD_STATE_SLEEPING);
 }
-
+//**************************************************************************
 void tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -433,7 +392,7 @@ void tt_ThreadSleepState(uint32_t time_ms, tinyThread_state state)
     debug(err);
     tt_ThreadYield(true);
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
@@ -451,7 +410,7 @@ TinyThreadsStatus tt_ThreadWake(tinyThread_tcb_idx id)
     debug(err);
     return err;
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
 {
     TinyThreadsStatus err = TINYTHREADS_ERROR;
@@ -466,7 +425,7 @@ TinyThreadsStatus tt_ThreadPause(tinyThread_tcb_idx id)
     debug(err);
     return err;
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id)
 {
     // TODO : this will put any thread in the ready state, even if it was blocked
@@ -483,7 +442,7 @@ TinyThreadsStatus tt_ThreadUnPause(tinyThread_tcb_idx id)
     debug(err);
     return err;
 }
-
+//**************************************************************************
 // TODO: do i want to keep this? internal use?
 tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
 {
@@ -496,7 +455,7 @@ tinyThreadsTime_ms_t tt_ThreadGetSleepCount(tinyThread_tcb_idx id)
     debug(TINYTHREADS_INVALID_TASK);
     return 0;
 }
-
+//**************************************************************************
 tinyThreadsTime_ms_t tt_ThreadGetNotifyTimeoutCount(tinyThread_tcb_idx id)
 {
     if (tt_isValidTcb(id))
@@ -507,12 +466,12 @@ tinyThreadsTime_ms_t tt_ThreadGetNotifyTimeoutCount(tinyThread_tcb_idx id)
     debug(TINYTHREADS_INVALID_TASK);
     return 0;
 }
-
+//**************************************************************************
 tinyThread_tcb *tt_ThreadGetCurrentTcb(void)
 {
     return tinyThread_current_tcb;
 }
-
+//**************************************************************************
 tinyThread_tcb *tt_ThreadGetTcbByID(tinyThread_tcb_idx id)
 {
     if (tt_isValidTcb(id))
@@ -523,7 +482,7 @@ tinyThread_tcb *tt_ThreadGetTcbByID(tinyThread_tcb_idx id)
     debug(TINYTHREADS_INVALID_TASK);
     return NULL;
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb)
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
@@ -541,7 +500,7 @@ TinyThreadsStatus tt_SetCurrentTcb(tinyThread_tcb *tcb)
     debug(err);
     return err;
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *val)
 {
 
