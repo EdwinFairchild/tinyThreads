@@ -66,8 +66,13 @@ TinyThreadsStatus tt_CoreRun(void)
         into the stack pointer register */
     __asm("LDR sp, [r1]");
 
+    /* Pop optional registers */
+    #if CFG_TINYTHREADS_SAVE_OPTIONAL_REGISTERS == 1
+    __asm("POP {r4-r11}");
+    #endif
+    
     /*  Pop the exception frame from the stack and return to the thread */
-    __asm("POP {r4-r12}");
+    __asm("POP {r12}");
     __asm("POP {r0-r3}");
 
     /*  skip LR in our stack by adding 4 the current SP */

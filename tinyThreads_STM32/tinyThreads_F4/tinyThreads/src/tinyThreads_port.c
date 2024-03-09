@@ -51,7 +51,9 @@ __attribute__((naked)) void PendSV_Handler(void)
     */
 
     // save r4-r11 on the stack
-    __asm("PUSH {r4-r11}");
+     #if CFG_TINYTHREADS_SAVE_OPTIONAL_REGISTERS == 1
+     __asm("PUSH {r4-r11}");
+    #endif
 
     __asm("STR sp, [r1]");
 
@@ -81,7 +83,9 @@ __attribute__((naked)) void PendSV_Handler(void)
     /*  restore r4-r11 from the stack, since we just updated the stack pointer to point to the next threads stack
         it will pop the values from there.
     */
+    #if CFG_TINYTHREADS_SAVE_OPTIONAL_REGISTERS == 1
     __asm("POP {r4-r11}");
+    #endif
 
     // enable interrupts
     __enable_irq();

@@ -180,11 +180,18 @@ static TinyThreadsStatus tt_ThreadStackInit(uint32_t threadIDX, uint32_t *stackP
                                             void (*thread)(uint32_t))
 {
     TinyThreadsStatus err = TINYTHREADS_OK;
+    uint8_t numberOffRegistersToSave = 0;
+    #if CFG_TINYTHREADS_SAVE_OPTIONAL_REGISTERS == 1
+    numberOffRegistersToSave = 16;;
+    #else
+    numberOffRegistersToSave = 8;
+    #endif
     if (stackPtr != NULL && stacksize != 0 && thread != NULL && threadIDX < TT_MAX_THREADS)
     {
         // initialize the stack pointer
-        // R13 is stack pointer, we manages the register manually using the stack pointer blow
-        tinyThread_thread_ctl[threadIDX].stackPointer = (uint32_t *)&stackPtr[stacksize - 16];
+        // R13 is stack pointer, we manage the register manually using the stack pointer below
+
+        tinyThread_thread_ctl[threadIDX].stackPointer = (uint32_t *)&stackPtr[stacksize - numberOffRegistersToSave];
         tinyThread_thread_ctl[threadIDX].lastRunTime = tt_TimeGetTick();
         stackPtr[TT_EXCEPTION_FRAME_PC(stacksize)] = (uint32_t)thread;
         //set T-bit to 1 to make sure we run in thumb mode : see core_cm4.h > xPSR_Type
@@ -539,7 +546,7 @@ TinyThreadsStatus tt_ThreadNotifyWait(tinyThreadsTime_ms_t timeout, uint32_t *va
     debug(err);
     return err;
 }
-
+//**************************************************************************
 TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bool overwrite)
 {
     tt_CoreCsEnter();
@@ -583,17 +590,17 @@ TinyThreadsStatus tt_ThreadNotify(tinyThread_tcb_idx taskID, uint32_t newVal, bo
     debug(err);
     return err;
 }
-
+//**************************************************************************
 tinyThread_tcb_idx tt_ThreadGetCurrentID(void)
 {
     return tinyThread_current_tcb->id;
 }
-
+//**************************************************************************
 uint32_t tt_ThreadGetInactiveThreadCount(void)
 {
     return tinyThread_inactive_thread_count;
 }
-
+//**************************************************************************
 // TODO : remove debnugging helpers
 void printNoneReadyList()
 {
