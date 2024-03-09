@@ -1,16 +1,6 @@
 #include "tinyThreads_thread.h"
 #include "tinyThreads_core.h"
 
-// TODO: remove Debugging-----------
-
-//---------------------
-/* Static allocation of Thread Control Block Array*/
-// TODO : make user allocate their TCBs in RAM
-// it will be laste wasteful than me allocating TT_MAX_THREADS amount
-// this will also allow them to decide stack size
-// list of all thread control blocks
-// however this means task list now should be a linked list instead of this array
-// since i wont know array size before hand
 static tinyThread_tcb_t tinyThread_thread_ctl[TT_MAX_THREADS];
 // used to keep track of current tcb
 tinyThread_tcb *tinyThread_current_tcb;
@@ -74,7 +64,6 @@ static TinyThreadsStatus tinyThread_addThreadToNonReadyList(tinyThread_tcb_idx i
         // STATE should be set before calling this function, since task can be
         // non ready for multiple reasons
         // thus im not setting it here
-        // temp->tcb->state |= THREAD_STATE_SLEEPING;
         temp->next = NULL;
         temp->prev = NULL;
         // check if head is null
