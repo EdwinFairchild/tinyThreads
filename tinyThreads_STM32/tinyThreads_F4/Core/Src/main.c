@@ -137,15 +137,11 @@ void thread1(uint32_t notifyVal)
 
 void thread2(uint32_t notifyal)
 {
-    static uint32_t   counter = 0;
-    volatile uint32_t delay = 0;
+    volatile uint32_t   counter = 0x42424242;
+
     while (1)
     {
         printf("thread2\r\n");
-        for (int i = 0; i < 1000000; i++)
-        {
-            delay++;
-        }
         tt_ThreadSleep(1000);
     }
 }
@@ -236,13 +232,14 @@ int main(void)
 
     if (tt_CoreInit() == TINYTHREADS_OK)
     {
+        printf("address of stack 1: %p\r\n", thread1_stack);
         thread1_id =
             tt_ThreadAdd(thread1, thread1_stack, sizeof(thread1_stack) / 4, 10, 1, (uint8_t *)"thread 1", true);
         thread2_id =
             tt_ThreadAdd(thread2, thread2_stack, sizeof(thread2_stack) / 4, 10, 1, (uint8_t *)"thread 2", true);
         thread3_id =
             tt_ThreadAdd(thread3, thread3_stack, sizeof(thread3_stack) / 4, 10, 1, (uint8_t *)"thread 3", true);
-        thread1_id =
+        thread2_id =
             tt_ThreadAdd(thread4, thread4_stack, sizeof(thread4_stack) / 4, 10, 1, (uint8_t *)"LED thread", true);
 
         if (thread1_id == TINYTHREADS_MAX_THREADS_REACHED || thread2_id == TINYTHREADS_MAX_THREADS_REACHED ||

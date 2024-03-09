@@ -1,12 +1,13 @@
 #ifndef TINYTHREADS_CONFIG_H
 #define TINYTHREADS_CONFIG_H
 
-#include <stdint.h>
 #define CFG_SYSTEM_CLOCK                  80
 #define CFG_TINYTHREADS_NUMBER_OF_THREADS 4
 #define CFG_TINYTHREADS_STACK_SIZE        1000
 #define CFG_TINYTHREADS_MAX_NAME_LENGTH   16
 #define CFG_TINYTHREADS_STACK_INIT_VALUE  0xDEADBEEF
+
+#define CFG_TINYTHREADS_SAVE_OPTIONAL_REGISTERS 0
 
 // Memory pool configuration - Application specific as needed
 #define CFG_MEM_POOL_LARGE_SIZE_BYTES  256
