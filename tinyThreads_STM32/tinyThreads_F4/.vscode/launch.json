@@ -8,12 +8,14 @@
             "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
-            "servertype": "openocd",
             "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}",
             "windows": {
+                "servertype": "stlink",
+                "serverpath": "${env:STM32CUBE_CLT_PATH}",
                 "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}"
             },
             "linux": {
+                "servertype": "openocd",
                 "armToolchainPath": "/home/eddie/STM/st/stm32cubeclt/GNU-tools-for-STM32/bin"
             },
             "device": "STM32F446RE",
