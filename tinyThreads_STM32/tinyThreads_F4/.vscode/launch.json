@@ -19,7 +19,6 @@
             },
             "osx": {
                 "servertype": "openocd",
-                "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin"
             },
             "device": "STM32F446RE",
             "configFiles": [
@@ -39,7 +38,6 @@
             "executable": "./build/tinyThreads_F4.elf",
             "request": "launch",
             "type": "cortex-debug",
-            "armToolchainPath": "${env:ARM_TOOLCHAIN_PATH}",
             "windows": {
                 "servertype": "stlink",
                 "serverpath": "${env:STM32CUBE_CLT_PATH}",
@@ -50,7 +48,6 @@
             },
             "osx": {
                 "servertype": "openocd",
-                "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin"
             },
             "device": "STM32F446RE",
             "configFiles": [
@@ -79,7 +76,6 @@
             },
             "osx": {
                 "servertype": "openocd",
-                "armToolchainPath": "/usr/local/gcc-arm-none-eabi-7-2018-q2-update/bin"
             },
             "device": "STM32F446RE",
             "configFiles": [
